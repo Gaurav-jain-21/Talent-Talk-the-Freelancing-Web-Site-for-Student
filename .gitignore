@@ -1,0 +1,42 @@
+# --- System Files ---
+.DS_Store
+Thumbs.db
+
+# --- IntelliJ / IDE Files ---
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.classpath
+.project
+.settings/
+.nbsetings/
+*.swp
+*.patch
+*.diff
+
+# --- Maven / Build Files ---
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/
+wrapper/
+
+# --- Logs & Temp ---
+*.log
+logs/
+temp/
+tmp/
+
+# --- Environment & Sensitive Data ---
+.env
+.env.local
+*.jks
+*.p12
+*.key

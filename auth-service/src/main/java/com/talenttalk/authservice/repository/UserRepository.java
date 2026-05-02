@@ -1,12 +1,11 @@
 package com.talenttalk.authservice.repository;
 
-import com.talenttalk.authservice.model.User;
+import com.talenttalk.authservice.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User> findByEmail(String email);
+    boolean existsByEmail(String email);
 }

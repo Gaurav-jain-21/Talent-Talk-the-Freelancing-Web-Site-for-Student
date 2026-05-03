@@ -1,4 +1,4 @@
-package com.talenttalk.authservice;
+package com.talenttalk.jobservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,10 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-public class AuthServiceApplication {
+public class JobServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AuthServiceApplication.class, args);
+		SpringApplication.run(JobServiceApplication.class, args);
 	}
 
 }

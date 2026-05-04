@@ -4,18 +4,17 @@ import com.talenttalk.authservice.dto.LoginRequest;
 import com.talenttalk.authservice.dto.RegisterRequest;
 import com.talenttalk.authservice.entity.User;
 import com.talenttalk.authservice.repository.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import com.talenttalk.authservice.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -25,11 +24,14 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> register(
+            @RequestBody RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.badRequest().body("Email already registered");
+            return ResponseEntity.badRequest()
+                    .body("Email already registered");
         }
 
         User user = new User();
@@ -43,9 +45,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request,
-                                        HttpServletRequest httpRequest) {
+    public ResponseEntity<Map<String, String>> login(
+            @RequestBody LoginRequest request) {
 
+        // Step 1 — verify credentials
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -53,24 +56,43 @@ public class AuthController {
                 )
         );
 
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
+        // Step 2 — get user from DB to get userId
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        HttpSession session = httpRequest.getSession(true);
-        session.setAttribute(
-                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-                context
+        // Step 3 — generate JWT token
+        String token = jwtUtil.generateToken(
+                user.getEmail(),
+                user.getRole().name(),
+                user.getId()
         );
 
-        return ResponseEntity.ok("Login successful. Role: " +
-                authentication.getAuthorities());
+        // Step 4 — return token + user info
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+        response.put("role", user.getRole().name());
+        response.put("userId", user.getId().toString());
+        response.put("name", user.getName());
+
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<String> me() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return ResponseEntity.ok("Logged in as: " + auth.getName() +
-                " | Role: " + auth.getAuthorities());
+    // Validate token — other services can call this
+    @GetMapping("/validate")
+    public ResponseEntity<Map<String, String>> validate(
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.substring(7);
+
+        if (!jwtUtil.isTokenValid(token)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        Map<String, String> response = new HashMap<>();
+        response.put("email", jwtUtil.extractEmail(token));
+        response.put("role", jwtUtil.extractRole(token));
+        response.put("userId", jwtUtil.extractUserId(token).toString());
+
+        return ResponseEntity.ok(response);
     }
 }

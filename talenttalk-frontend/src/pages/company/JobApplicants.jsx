@@ -1,49 +1,48 @@
-// src/pages/company/JobApplicants.jsx
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import Navbar from '../../components/Navbar'
-import { getApplicants, updateApplicationStatus } from '../../api/companyApi'
-import { createInterview } from '../../api/interviewApi'
-import { useAuth } from '../../context/AuthContext'
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import Navbar from "../../components/Navbar";
+import { getApplicants, updateApplicationStatus } from "../../api/companyApi";
+import { createInterview } from "../../api/interviewApi";
+import { useAuth } from "../../context/AuthContext";
 
 const JobApplicants = () => {
-  const { jobId } = useParams()
-  const { user } = useAuth()
-  const [applicants, setApplicants] = useState([])
-  const [deadline, setDeadline] = useState('')
+  const { jobId } = useParams();
+  const { user } = useAuth();
+  const [applicants, setApplicants] = useState([]);
+  const [deadline, setDeadline] = useState("");
 
   useEffect(() => {
-    getApplicants(jobId).then(res => setApplicants(res.data))
-  }, [])
+    getApplicants(jobId).then((res) => setApplicants(res.data));
+  }, []);
 
   const handleStatus = async (applicationId, status, studentId) => {
     try {
-      await updateApplicationStatus(applicationId, status)
-      setApplicants(applicants.map(a =>
-        a.id === applicationId ? { ...a, status } : a
-      ))
+      await updateApplicationStatus(applicationId, status);
+      setApplicants(
+        applicants.map((a) => (a.id === applicationId ? { ...a, status } : a)),
+      );
     } catch (err) {
-      alert('Failed to update status')
+      alert("Failed to update status");
     }
-  }
+  };
 
   const handleInterview = async (studentId) => {
     if (!deadline) {
-      alert('Please set interview deadline first')
-      return
+      alert("Please set interview deadline first");
+      return;
     }
     try {
       await createInterview({
         jobId: parseInt(jobId),
         studentId,
         companyId: parseInt(user.userId),
-        deadline
-      })
-      alert('Interview created! Student will be notified.')
+        deadline,
+      });
+      alert("Interview created! Student will be notified.");
     } catch (err) {
-      alert(err.response?.data || 'Failed to create interview')
+      alert(err.response?.data || "Failed to create interview");
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -69,58 +68,57 @@ const JobApplicants = () => {
         </div>
 
         {applicants.length === 0 ? (
-          <p className="text-center text-gray-500">
-            No applicants yet
-          </p>
+          <p className="text-center text-gray-500">No applicants yet</p>
         ) : (
           <div className="space-y-4">
-            {applicants.map(app => (
-              <div key={app.id}
-                className="bg-white rounded-xl shadow p-6">
+            {applicants.map((app) => (
+              <div key={app.id} className="bg-white rounded-xl shadow p-6">
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-semibold">{app.studentName}</p>
+                    <p className="text-sm text-gray-500">{app.studentEmail}</p>
                     <p className="text-sm text-gray-500">
-                      {app.studentEmail}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Applied: {new Date(app.appliedAt)
-                        .toLocaleDateString()}
+                      Applied: {new Date(app.appliedAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full
+                  <span
+                    className={`px-3 py-1 rounded-full
                     text-xs font-medium ${
-                    app.status === 'SELECTED'
-                      ? 'bg-green-100 text-green-700'
-                      : app.status === 'REJECTED'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-yellow-100 text-yellow-700'
-                  }`}>
+                      app.status === "SELECTED"
+                        ? "bg-green-100 text-green-700"
+                        : app.status === "REJECTED"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
                     {app.status}
                   </span>
                 </div>
 
                 <div className="flex gap-2 mt-4 flex-wrap">
                   <button
-                    onClick={() => handleStatus(
-                      app.id, 'SELECTED', app.studentId
-                    )}
+                    onClick={() =>
+                      handleStatus(app.id, "SELECTED", app.studentId)
+                    }
                     className="bg-green-500 hover:bg-green-600
-                      text-white px-3 py-1 rounded text-sm">
+                      text-white px-3 py-1 rounded text-sm"
+                  >
                     Select
                   </button>
                   <button
-                    onClick={() => handleStatus(
-                      app.id, 'REJECTED', app.studentId
-                    )}
+                    onClick={() =>
+                      handleStatus(app.id, "REJECTED", app.studentId)
+                    }
                     className="bg-red-500 hover:bg-red-600
-                      text-white px-3 py-1 rounded text-sm">
+                      text-white px-3 py-1 rounded text-sm"
+                  >
                     Reject
                   </button>
                   <button
                     onClick={() => handleInterview(app.studentId)}
                     className="bg-blue-500 hover:bg-blue-600
-                      text-white px-3 py-1 rounded text-sm">
+                      text-white px-3 py-1 rounded text-sm"
+                  >
                     Schedule Interview
                   </button>
                 </div>
@@ -130,7 +128,7 @@ const JobApplicants = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default JobApplicants
+export default JobApplicants;

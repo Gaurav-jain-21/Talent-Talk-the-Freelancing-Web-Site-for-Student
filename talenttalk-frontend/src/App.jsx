@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentProfile from "./pages/student/StudentProfile";
 import JobList from "./pages/student/JobList";
@@ -11,6 +13,7 @@ import MyApplications from "./pages/student/MyApplications";
 import StudentChat from "./pages/student/Chat";
 import Interview from "./pages/student/Interview";
 import StudentPayments from "./pages/student/Payments";
+
 import CompanyDashboard from "./pages/company/CompanyDashboard";
 import CompanyProfile from "./pages/company/CompanyProfile";
 import MyJobs from "./pages/company/MyJobs";
@@ -21,6 +24,7 @@ import StudentDetail from "./pages/company/StudentDetail";
 import CompanyChat from "./pages/company/Chat";
 import InterviewResults from "./pages/company/InterviewResults";
 import CompanyPayments from "./pages/company/Payments";
+
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageStudents from "./pages/admin/ManageStudents";
 import ManageCompanies from "./pages/admin/ManageCompanies";
@@ -34,6 +38,7 @@ function App() {
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
           <Route
             path="/student/dashboard"
             element={
@@ -98,6 +103,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/company/dashboard"
             element={
@@ -178,6 +184,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/admin/dashboard"
             element={

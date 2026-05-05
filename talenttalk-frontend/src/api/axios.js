@@ -1,26 +1,27 @@
-import axios from "axios";
+import axios from 'axios'
 
 const instance = axios.create({
-  baseURL: "http://localhost:8080",
-});
-instance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+  baseURL: 'http://localhost:8080',
+})
 
-// Handle 401 — redirect to login
-instance.interceptors.response.use(
+ 
+instance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+ instance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.clear();
-      window.location.href = "/login";
+      localStorage.clear()
+      window.location.href = '/login'
     }
-    return Promise.reject(error);
-  },
-);
+    return Promise.reject(error)
+  }
+)
 
-export default instance;
+export default instance

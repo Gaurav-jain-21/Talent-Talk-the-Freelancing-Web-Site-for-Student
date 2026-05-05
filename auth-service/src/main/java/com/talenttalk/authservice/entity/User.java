@@ -1,28 +1,32 @@
 package com.talenttalk.authservice.entity;
 
-import jakarta.persistence.*;
-import jdk.jfr.Name;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+import jakarta.persistence.*;
+import lombok.Data;
+
 @Entity
-@Table(name="user")
+@Table(name = "users")
+@Data
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
-    @Column(unique = true, nullable=false)
+
+    @Column(unique = true, nullable = false)
     private String email;
-    @Column(nullable=false)
+
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    // ADD THESE TWO NEW FIELDS
+    @Column(nullable = false)
+    private boolean isVerified = false;
 
+    private String verificationToken;
 }

@@ -35,7 +35,9 @@ public class SecurityConfig {
                         // public endpoints
                         .requestMatchers(
                                 "/auth/register",
-                                "/auth/login"
+                                "/auth/login",
+                                "/auth/verify",              // ADD THIS
+                                "/auth/resend-verification"
                         ).permitAll()
                         // everything else needs authentication
                         .anyRequest().authenticated()

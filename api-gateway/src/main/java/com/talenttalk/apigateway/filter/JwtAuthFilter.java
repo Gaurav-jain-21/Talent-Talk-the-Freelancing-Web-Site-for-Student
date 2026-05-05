@@ -24,7 +24,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final List<String> OPEN_ROUTES = List.of(
             "/auth/register",
-            "/auth/login"
+            "/auth/login",
+            "/auth/verify",
+            "/auth/resend-verification"
     );
 
     @Override

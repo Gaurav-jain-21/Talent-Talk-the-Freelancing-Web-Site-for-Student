@@ -4,7 +4,9 @@ import com.talenttalk.authservice.dto.LoginRequest;
 import com.talenttalk.authservice.dto.RegisterRequest;
 import com.talenttalk.authservice.entity.User;
 import com.talenttalk.authservice.repository.UserRepository;
+import com.talenttalk.authservice.service.EmailVerificationService;
 import com.talenttalk.authservice.util.JwtUtil;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
@@ -25,30 +28,63 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(
-            @RequestBody RegisterRequest request) {
+            @RequestBody RegisterRequest request)
+            throws MessagingException {
+
+        // Check email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity.badRequest()
                     .body("Email already registered");
         }
 
+        // Generate unique verification token
+        String verificationToken = UUID.randomUUID().toString();
+
+        // Save user with isVerified = false
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
+        user.setVerified(false);
+        user.setVerificationToken(verificationToken);
 
         userRepository.save(user);
-        return ResponseEntity.ok("Registered successfully");
+
+        // Send verification email
+        emailVerificationService.sendVerificationEmail(
+                request.getEmail(),
+                request.getName(),
+                verificationToken
+        );
+
+        return ResponseEntity.ok(
+                "Registered successfully! " +
+                        "Please check your email to verify your account."
+        );
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(
+    public ResponseEntity<?> login(
             @RequestBody LoginRequest request) {
 
-        // Step 1 — verify credentials
+        // Check if user exists
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if email is verified
+        if (!user.isVerified()) {
+            return ResponseEntity.status(403).body(
+                    "Email not verified. " +
+                            "Please check your email and verify your account first."
+            );
+        }
+
+        // Verify credentials
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -56,18 +92,13 @@ public class AuthController {
                 )
         );
 
-        // Step 2 — get user from DB to get userId
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Step 3 — generate JWT token
+        // Generate JWT token
         String token = jwtUtil.generateToken(
                 user.getEmail(),
                 user.getRole().name(),
                 user.getId()
         );
 
-        // Step 4 — return token + user info
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
         response.put("role", user.getRole().name());
@@ -77,7 +108,60 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // Validate token — other services can call this
+    // Email verification endpoint
+    @GetMapping("/verify")
+    public ResponseEntity<String> verifyEmail(
+            @RequestParam String token) {
+
+        // Find user by verification token
+        User user = userRepository.findByVerificationToken(token)
+                .orElseThrow(() -> new RuntimeException(
+                        "Invalid or expired verification token"
+                ));
+
+        // Check already verified
+        if (user.isVerified()) {
+            return ResponseEntity.ok("Email already verified. You can login.");
+        }
+
+        // Mark as verified and clear token
+        user.setVerified(true);
+        user.setVerificationToken(null);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(
+                "Email verified successfully! You can now login."
+        );
+    }
+
+    // Resend verification email
+    @PostMapping("/resend-verification")
+    public ResponseEntity<String> resendVerification(
+            @RequestParam String email) throws MessagingException {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.isVerified()) {
+            return ResponseEntity.badRequest()
+                    .body("Email already verified");
+        }
+
+        // Generate new token
+        String newToken = UUID.randomUUID().toString();
+        user.setVerificationToken(newToken);
+        userRepository.save(user);
+
+        emailVerificationService.sendVerificationEmail(
+                user.getEmail(),
+                user.getName(),
+                newToken
+        );
+
+        return ResponseEntity.ok("Verification email resent successfully");
+    }
+
+    // Validate token endpoint
     @GetMapping("/validate")
     public ResponseEntity<Map<String, String>> validate(
             @RequestHeader("Authorization") String authHeader) {

@@ -4,6 +4,7 @@ import Navbar from "../../components/Navbar";
 import { getJobById, applyToJob } from "../../api/jobApi";
 import { useAuth } from "../../context/AuthContext";
 import { getProfile } from "../../api/studentApi";
+import { getErrorMessage } from "../../utils/errorMessage";
 
 const JobDetail = () => {
   const { jobId } = useParams();
@@ -31,7 +32,7 @@ const JobDetail = () => {
       setApplied(true);
       setMessage("Applied successfully!");
     } catch (err) {
-      setMessage(err.response?.data || "Failed to apply");
+      setMessage(getErrorMessage(err, "Failed to apply"));
     } finally {
       setLoading(false);
     }

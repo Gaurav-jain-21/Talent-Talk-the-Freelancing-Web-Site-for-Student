@@ -69,7 +69,7 @@ public class JobController {
             @PathVariable Long studentId) {
         return ResponseEntity.ok(jobService.getApplicationsByStudent(studentId));
     }
-    @PatchMapping("/application/{applicationId}/status")
+    @PostMapping("/application/{applicationId}/status")
     public ResponseEntity<Application> updateStatus(
             @PathVariable Long applicationId,
             @RequestParam ApplicationStatus status) {

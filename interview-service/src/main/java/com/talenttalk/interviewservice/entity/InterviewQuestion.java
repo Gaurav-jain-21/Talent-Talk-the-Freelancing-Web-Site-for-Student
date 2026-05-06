@@ -16,21 +16,19 @@ public class InterviewQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private Long interviewId;
-
     private Integer questionNumber;
 
     @Column(length = 1000)
     private String question;
 
     @Column(length = 2000)
-    private String expectedAnswer; // AI ideal answer
+    private String expectedAnswer;
 
     @Column(length = 2000)
     private String studentAnswer;
 
-    private Integer score; // 0-10
+    private Integer score;
 
     @Column(length = 1000)
     private String feedback;

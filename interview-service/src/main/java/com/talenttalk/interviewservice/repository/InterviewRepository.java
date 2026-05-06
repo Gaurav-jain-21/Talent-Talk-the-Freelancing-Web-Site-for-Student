@@ -1,4 +1,3 @@
-// InterviewRepository.java
 package com.talenttalk.interviewservice.repository;
 
 import com.talenttalk.interviewservice.entity.Interview;
@@ -8,7 +7,6 @@ import java.util.List;
 
 public interface InterviewRepository
         extends JpaRepository<Interview, Long> {
-
     List<Interview> findByStudentId(Long studentId);
     List<Interview> findByCompanyId(Long companyId);
     List<Interview> findByJobId(Long jobId);

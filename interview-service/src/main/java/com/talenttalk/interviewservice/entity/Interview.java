@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -19,13 +18,8 @@ public class Interview {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private Long jobId;
-
-    @Column(nullable = false)
     private Long studentId;
-
-    @Column(nullable = false)
     private Long companyId;
 
     private String jobTitle;
@@ -34,7 +28,6 @@ public class Interview {
     private String jobDescription;
 
     private String skillsRequired;
-
     private String studentName;
     private String studentSkills;
 
@@ -53,7 +46,7 @@ public class Interview {
     private Integer totalScore;
     private String grade;
 
-    @Column(length = 2000)
+    @Column(length = 3000)
     private String summary;
 
     private String recommendation;

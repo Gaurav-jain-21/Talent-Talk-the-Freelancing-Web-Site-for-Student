@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { login } from "../../api/authApi";
+import { getErrorMessage } from "../../utils/errorMessage";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -22,7 +23,7 @@ const Login = () => {
       else if (role === "COMPANY") navigate("/company/dashboard");
       else if (role === "ADMIN") navigate("/admin/dashboard");
     } catch (err) {
-      setError(err.response?.data || "Login failed");
+      setError(getErrorMessage(err, "Login failed"));
     } finally {
       setLoading(false);
     }
@@ -32,8 +33,9 @@ const Login = () => {
     <div
       className="min-h-screen bg-gray-100 flex
       items-center justify-center"
+      style={{ minHeight: "100vh", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center" }}
     >
-      <div className="bg-white p-8 rounded-xl shadow-md w-96">
+      <div className="bg-white p-8 rounded-xl shadow-md w-96" style={{ background: "#fff", padding: 24, borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.08)", width: 380, maxWidth: "92vw" }}>
         <h2
           className="text-2xl font-bold text-center
           text-blue-600 mb-6"

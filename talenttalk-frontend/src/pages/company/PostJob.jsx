@@ -2,6 +2,7 @@ import { useState } from "react";
 import Navbar from "../../components/Navbar";
 import { postJob } from "../../api/jobApi";
 import { useAuth } from "../../context/AuthContext";
+import { getErrorMessage } from "../../utils/errorMessage";
 import { useNavigate } from "react-router-dom";
 
 const PostJob = () => {
@@ -30,7 +31,7 @@ const PostJob = () => {
       setMessage("Job posted successfully!");
       setTimeout(() => navigate("/company/jobs"), 2000);
     } catch (err) {
-      setMessage(err.response?.data || "Failed to post job");
+      setMessage(getErrorMessage(err, "Failed to post job"));
     } finally {
       setLoading(false);
     }

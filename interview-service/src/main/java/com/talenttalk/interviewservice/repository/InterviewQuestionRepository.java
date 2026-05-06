@@ -7,10 +7,8 @@ import java.util.Optional;
 
 public interface InterviewQuestionRepository
         extends JpaRepository<InterviewQuestion, Long> {
-
     List<InterviewQuestion> findByInterviewIdOrderByQuestionNumber(
             Long interviewId);
-
     Optional<InterviewQuestion> findByInterviewIdAndQuestionNumber(
             Long interviewId, Integer questionNumber);
 }

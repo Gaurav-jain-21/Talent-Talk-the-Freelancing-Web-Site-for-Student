@@ -8,10 +8,10 @@ import java.util.List;
 
 @FeignClient(name="STUDENT-SERVICE")
 public interface StudentClient {
-    @GetMapping("/students/all")
+    @GetMapping("/student/all")
     List<Object> getAllStudents();
 
-    @GetMapping("/students/profile/{userId}")
+    @GetMapping("/student/profile/{userId}")
     Object getStudentProfile(@PathVariable Long userId);
 
 }

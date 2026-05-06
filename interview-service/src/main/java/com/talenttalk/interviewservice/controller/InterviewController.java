@@ -19,7 +19,6 @@ public class InterviewController {
 
     private final InterviewService interviewService;
 
-    // Company creates interview for a student
     @PostMapping("/create")
     public ResponseEntity<Interview> createInterview(
             @RequestBody InterviewRequest request) {
@@ -27,7 +26,6 @@ public class InterviewController {
                 interviewService.createInterview(request));
     }
 
-    // Student starts interview
     @PostMapping("/{interviewId}/start")
     public ResponseEntity<InterviewResult> startInterview(
             @PathVariable Long interviewId) {
@@ -35,7 +33,6 @@ public class InterviewController {
                 interviewService.startInterview(interviewId));
     }
 
-    // Student gets next unanswered question
     @GetMapping("/{interviewId}/next-question")
     public ResponseEntity<InterviewQuestion> getNextQuestion(
             @PathVariable Long interviewId) {
@@ -43,7 +40,6 @@ public class InterviewController {
                 interviewService.getNextQuestion(interviewId));
     }
 
-    // Student submits answer
     @PostMapping("/answer")
     public ResponseEntity<InterviewQuestion> submitAnswer(
             @RequestBody AnswerRequest request) {
@@ -51,7 +47,6 @@ public class InterviewController {
                 interviewService.submitAnswer(request));
     }
 
-    // Company views full result with scores
     @GetMapping("/{interviewId}/result")
     public ResponseEntity<InterviewResult> getResult(
             @PathVariable Long interviewId) {
@@ -59,7 +54,6 @@ public class InterviewController {
                 interviewService.getInterviewResult(interviewId));
     }
 
-    // Student views their interviews
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<Interview>> getByStudent(
             @PathVariable Long studentId) {
@@ -67,7 +61,6 @@ public class InterviewController {
                 interviewService.getInterviewsByStudent(studentId));
     }
 
-    // Student views pending interviews
     @GetMapping("/student/{studentId}/pending")
     public ResponseEntity<List<Interview>> getPending(
             @PathVariable Long studentId) {
@@ -75,7 +68,6 @@ public class InterviewController {
                 interviewService.getPendingInterviews(studentId));
     }
 
-    // Company views all interviews they created
     @GetMapping("/company/{companyId}")
     public ResponseEntity<List<Interview>> getByCompany(
             @PathVariable Long companyId) {
@@ -83,7 +75,6 @@ public class InterviewController {
                 interviewService.getInterviewsByCompany(companyId));
     }
 
-    // Company views all interviews for a specific job
     @GetMapping("/job/{jobId}")
     public ResponseEntity<List<Interview>> getByJob(
             @PathVariable Long jobId) {

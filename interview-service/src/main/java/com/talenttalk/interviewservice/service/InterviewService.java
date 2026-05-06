@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,21 +23,18 @@ public class InterviewService {
 
     private final InterviewRepository interviewRepository;
     private final InterviewQuestionRepository questionRepository;
-    private final GeminiService geminiService;
+    private final OllamaService ollamaService;
     private final StudentClient studentClient;
     private final JobClient jobClient;
 
-    // Company triggers interview for a student
+    // Company creates interview for student
     public Interview createInterview(InterviewRequest request) {
 
-        // Step 1 — fetch job details from Job Service
-        Map<String, Object> job = jobClient.getJobById(request.getJobId());
+        Map<String, Object> job =
+                jobClient.getJobById(request.getJobId());
+        Map<String, Object> student =
+                studentClient.getStudentProfile(request.getStudentId());
 
-        // Step 2 — fetch student details from Student Service
-        Map<String, Object> student = studentClient
-                .getStudentProfile(request.getStudentId());
-
-        // Step 3 — create interview record
         Interview interview = new Interview();
         interview.setJobId(request.getJobId());
         interview.setStudentId(request.getStudentId());
@@ -46,15 +42,12 @@ public class InterviewService {
         interview.setDeadline(request.getDeadline());
         interview.setStatus(InterviewStatus.PENDING);
 
-        // Store job info
         interview.setJobTitle(
                 job.getOrDefault("title", "").toString());
         interview.setJobDescription(
                 job.getOrDefault("description", "").toString());
         interview.setSkillsRequired(
                 job.getOrDefault("skillsRequired", "").toString());
-
-        // Store student info
         interview.setStudentName(
                 student.getOrDefault("fullName", "").toString());
         interview.setStudentSkills(
@@ -67,55 +60,44 @@ public class InterviewService {
         return interviewRepository.save(interview);
     }
 
-    // Student starts interview
+    // Student starts — ONE Ollama call generates all questions
     public InterviewResult startInterview(Long interviewId) {
 
-        Interview interview = interviewRepository.findById(interviewId)
+        Interview interview = interviewRepository
+                .findById(interviewId)
                 .orElseThrow(() -> new RuntimeException(
                         "Interview not found"));
 
-        // Check deadline
         if (LocalDateTime.now().isAfter(interview.getDeadline())) {
             interview.setStatus(InterviewStatus.EXPIRED);
             interviewRepository.save(interview);
-            throw new RuntimeException(
-                    "Interview deadline has passed");
+            throw new RuntimeException("Interview deadline has passed");
         }
 
-        // Check status
         if (interview.getStatus() == InterviewStatus.COMPLETED) {
             throw new RuntimeException("Interview already completed");
         }
 
-        // If first time starting — generate questions
         if (interview.getStatus() == InterviewStatus.PENDING) {
 
-            // AI generates 7 questions
-            List<String> questions = geminiService.generateQuestions(
-                    interview.getJobTitle(),
-                    interview.getJobDescription(),
-                    interview.getSkillsRequired(),
-                    interview.getStudentSkills(),
-                    interview.getStudentBio(),
-                    interview.getStudentProjects()
-            );
+            // ONE Ollama call — all 7 Q+A
+            List<Map<String, String>> questionsWithAnswers =
+                    ollamaService.generateQuestionsWithAnswers(
+                            interview.getJobTitle(),
+                            interview.getJobDescription(),
+                            interview.getSkillsRequired(),
+                            interview.getStudentSkills(),
+                            interview.getStudentBio(),
+                            interview.getStudentProjects()
+                    );
 
-            // Save each question with expected answer
-            for (int i = 0; i < questions.size(); i++) {
-                String question = questions.get(i);
-
-                String expectedAnswer = geminiService
-                        .generateExpectedAnswer(
-                                question,
-                                interview.getJobTitle(),
-                                interview.getSkillsRequired()
-                        );
-
+            for (int i = 0; i < questionsWithAnswers.size(); i++) {
+                Map<String, String> qa = questionsWithAnswers.get(i);
                 InterviewQuestion iq = new InterviewQuestion();
                 iq.setInterviewId(interviewId);
                 iq.setQuestionNumber(i + 1);
-                iq.setQuestion(question);
-                iq.setExpectedAnswer(expectedAnswer);
+                iq.setQuestion(qa.get("question"));
+                iq.setExpectedAnswer(qa.get("expectedAnswer"));
                 questionRepository.save(iq);
             }
 
@@ -130,7 +112,7 @@ public class InterviewService {
         return new InterviewResult(interview, questions);
     }
 
-    // Student submits answer for a question
+    // Student submits answer — NO AI call, just saves
     public InterviewQuestion submitAnswer(AnswerRequest request) {
 
         Interview interview = interviewRepository
@@ -138,14 +120,12 @@ public class InterviewService {
                 .orElseThrow(() -> new RuntimeException(
                         "Interview not found"));
 
-        // Check deadline
         if (LocalDateTime.now().isAfter(interview.getDeadline())) {
             interview.setStatus(InterviewStatus.EXPIRED);
             interviewRepository.save(interview);
             throw new RuntimeException("Interview deadline has passed");
         }
 
-        // Find the question
         InterviewQuestion question = questionRepository
                 .findByInterviewIdAndQuestionNumber(
                         request.getInterviewId(),
@@ -153,28 +133,16 @@ public class InterviewService {
                 .orElseThrow(() -> new RuntimeException(
                         "Question not found"));
 
-        // AI evaluates the answer
-        Map<String, Object> evaluation = geminiService.evaluateAnswer(
-                question.getQuestion(),
-                question.getExpectedAnswer(),
-                request.getAnswer(),
-                interview.getJobTitle()
-        );
-
-        // Save student answer + score + feedback
         question.setStudentAnswer(request.getAnswer());
-        question.setScore((Integer) evaluation.get("score"));
-        question.setFeedback(evaluation.get("feedback").toString());
-
         questionRepository.save(question);
 
-        // Check if all questions answered
+        // Evaluate everything when last answer submitted
         checkAndCompleteInterview(interview);
 
         return question;
     }
 
-    // Check if all 7 questions answered and complete interview
+    // Evaluates when all 7 answers are in — ONE Ollama call
     private void checkAndCompleteInterview(Interview interview) {
 
         List<InterviewQuestion> questions = questionRepository
@@ -187,31 +155,46 @@ public class InterviewService {
 
         if (allAnswered && questions.size() == 7) {
 
-            // Calculate total score (sum of all scores * 100/70)
-            int totalRaw = questions.stream()
-                    .mapToInt(q -> q.getScore() != null
-                            ? q.getScore() : 0)
-                    .sum();
-            int totalScore = (int) Math.round(totalRaw * 100.0 / 70);
-
-            // Generate summary
             List<String> qs = questions.stream()
                     .map(InterviewQuestion::getQuestion).toList();
-            List<String> ans = questions.stream()
+            List<String> expectedAnswers = questions.stream()
+                    .map(InterviewQuestion::getExpectedAnswer).toList();
+            List<String> studentAnswers = questions.stream()
                     .map(InterviewQuestion::getStudentAnswer).toList();
-            List<Integer> scores = questions.stream()
-                    .map(InterviewQuestion::getScore).toList();
 
-            Map<String, String> summary = geminiService.generateSummary(
-                    interview.getJobTitle(),
-                    interview.getStudentName(),
-                    totalScore, qs, ans, scores
-            );
+            // ONE Ollama call — evaluate all + summary
+            Map<String, Object> evaluation =
+                    ollamaService.evaluateAllAnswers(
+                            interview.getJobTitle(),
+                            interview.getStudentName(),
+                            qs,
+                            expectedAnswers,
+                            studentAnswers
+                    );
+
+            List<Integer> scores =
+                    (List<Integer>) evaluation.get("scores");
+            List<String> feedbacks =
+                    (List<String>) evaluation.get("feedbacks");
+
+            for (int i = 0; i < questions.size(); i++) {
+                InterviewQuestion q = questions.get(i);
+                q.setScore(i < scores.size() ? scores.get(i) : 5);
+                q.setFeedback(i < feedbacks.size()
+                        ? feedbacks.get(i) : "Evaluated.");
+                questionRepository.save(q);
+            }
+
+            int totalRaw = scores.stream()
+                    .mapToInt(Integer::intValue).sum();
+            int totalScore = (int) Math.round(totalRaw * 100.0 / 70);
+            totalScore = Math.min(100, totalScore);
 
             interview.setTotalScore(totalScore);
-            interview.setGrade(geminiService.calculateGrade(totalScore));
-            interview.setSummary(summary.get("summary"));
-            interview.setRecommendation(summary.get("recommendation"));
+            interview.setGrade(ollamaService.calculateGrade(totalScore));
+            interview.setSummary(evaluation.get("summary").toString());
+            interview.setRecommendation(
+                    evaluation.get("recommendation").toString());
             interview.setStatus(InterviewStatus.COMPLETED);
             interview.setCompletedAt(LocalDateTime.now());
 
@@ -219,12 +202,10 @@ public class InterviewService {
         }
     }
 
-    // Get next unanswered question for student
     public InterviewQuestion getNextQuestion(Long interviewId) {
-        List<InterviewQuestion> questions = questionRepository
-                .findByInterviewIdOrderByQuestionNumber(interviewId);
-
-        return questions.stream()
+        return questionRepository
+                .findByInterviewIdOrderByQuestionNumber(interviewId)
+                .stream()
                 .filter(q -> q.getStudentAnswer() == null
                         || q.getStudentAnswer().isEmpty())
                 .findFirst()
@@ -232,35 +213,28 @@ public class InterviewService {
                         "All questions answered"));
     }
 
-    // Company views full interview result
     public InterviewResult getInterviewResult(Long interviewId) {
         Interview interview = interviewRepository
                 .findById(interviewId)
                 .orElseThrow(() -> new RuntimeException(
                         "Interview not found"));
-
         List<InterviewQuestion> questions = questionRepository
                 .findByInterviewIdOrderByQuestionNumber(interviewId);
-
         return new InterviewResult(interview, questions);
     }
 
-    // Get all interviews for a student
     public List<Interview> getInterviewsByStudent(Long studentId) {
         return interviewRepository.findByStudentId(studentId);
     }
 
-    // Get all interviews for a company
     public List<Interview> getInterviewsByCompany(Long companyId) {
         return interviewRepository.findByCompanyId(companyId);
     }
 
-    // Get all interviews for a job
     public List<Interview> getInterviewsByJob(Long jobId) {
         return interviewRepository.findByJobId(jobId);
     }
 
-    // Get pending interviews for student
     public List<Interview> getPendingInterviews(Long studentId) {
         return interviewRepository.findByStudentIdAndStatus(
                 studentId, InterviewStatus.PENDING);

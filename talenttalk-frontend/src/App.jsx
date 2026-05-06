@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -5,39 +6,40 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 
-import StudentDashboard from "./pages/student/StudentDashboard";
-import StudentProfile from "./pages/student/StudentProfile";
-import JobList from "./pages/student/JobList";
-import JobDetail from "./pages/student/JobDetail";
-import MyApplications from "./pages/student/MyApplications";
-import StudentChat from "./pages/student/Chat";
-import Interview from "./pages/student/Interview";
-import StudentPayments from "./pages/student/Payments";
+const StudentDashboard = lazy(() => import("./pages/student/StudentDashboard"));
+const StudentProfile = lazy(() => import("./pages/student/StudentProfile"));
+const JobList = lazy(() => import("./pages/student/JobList"));
+const JobDetail = lazy(() => import("./pages/student/JobDetail"));
+const MyApplications = lazy(() => import("./pages/student/MyApplications"));
+const StudentChat = lazy(() => import("./pages/student/Chat"));
+const Interview = lazy(() => import("./pages/student/Interview"));
+const StudentPayments = lazy(() => import("./pages/student/Payments"));
 
-import CompanyDashboard from "./pages/company/CompanyDashboard";
-import CompanyProfile from "./pages/company/CompanyProfile";
-import MyJobs from "./pages/company/MyJobs";
-import PostJob from "./pages/company/PostJob";
-import JobApplicants from "./pages/company/JobApplicants";
-import StudentList from "./pages/company/StudentList";
-import StudentDetail from "./pages/company/StudentDetail";
-import CompanyChat from "./pages/company/Chat";
-import InterviewResults from "./pages/company/InterviewResults";
-import CompanyPayments from "./pages/company/Payments";
+const CompanyDashboard = lazy(() => import("./pages/company/CompanyDashboard"));
+const CompanyProfile = lazy(() => import("./pages/company/CompanyProfile"));
+const MyJobs = lazy(() => import("./pages/company/MyJobs"));
+const PostJob = lazy(() => import("./pages/company/PostJob"));
+const JobApplicants = lazy(() => import("./pages/company/JobApplicants"));
+const StudentList = lazy(() => import("./pages/company/StudentList"));
+const StudentDetail = lazy(() => import("./pages/company/StudentDetail"));
+const CompanyChat = lazy(() => import("./pages/company/Chat"));
+const InterviewResults = lazy(() => import("./pages/company/InterviewResults"));
+const CompanyPayments = lazy(() => import("./pages/company/Payments"));
 
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import ManageStudents from "./pages/admin/ManageStudents";
-import ManageCompanies from "./pages/admin/ManageCompanies";
-import ManageJobs from "./pages/admin/ManageJobs";
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const ManageStudents = lazy(() => import("./pages/admin/ManageStudents"));
+const ManageCompanies = lazy(() => import("./pages/admin/ManageCompanies"));
+const ManageJobs = lazy(() => import("./pages/admin/ManageJobs"));
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+        <Suspense fallback={<div style={{ padding: 16 }}>Loading...</div>}>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
           <Route
             path="/student/dashboard"
@@ -217,7 +219,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-        </Routes>
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   );

@@ -3,6 +3,7 @@ package com.talenttalk.companyservice.controller;
 import com.talenttalk.companyservice.dto.CompanyProfileRequest;
 import com.talenttalk.companyservice.entity.CompanyProfile;
 import com.talenttalk.companyservice.service.CompanyService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,13 +19,13 @@ public class CompanyController {
 
     @PostMapping("/profile")
     public ResponseEntity<CompanyProfile> createProfile(
-            @RequestBody CompanyProfileRequest request) {
+            @Valid @RequestBody CompanyProfileRequest request) {
         return ResponseEntity.ok(companyService.createProfile(request));
     }
     @PutMapping("/profile/{userId}")
     public ResponseEntity<CompanyProfile> updateProfile(
             @PathVariable Long userId,
-            @RequestBody CompanyProfileRequest request) {
+            @Valid @RequestBody CompanyProfileRequest request) {
         return ResponseEntity.ok(companyService.updateProfile(userId, request));
     }
 

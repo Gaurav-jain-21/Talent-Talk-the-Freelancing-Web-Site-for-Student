@@ -6,6 +6,7 @@ import com.talenttalk.studentservice.entity.Project;
 import com.talenttalk.studentservice.entity.StudentProfile;
 import com.talenttalk.studentservice.entity.WorkStatus;
 import com.talenttalk.studentservice.service.StudentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,12 @@ public class StudentController {
     @Autowired
     private StudentService studentService;
     @PostMapping("/profile")
-    public ResponseEntity<StudentProfile> createProfile(@RequestBody StudentProfileRequest request){
+    public ResponseEntity<StudentProfile> createProfile(@Valid @RequestBody StudentProfileRequest request){
         return ResponseEntity.ok(studentService.createProfile(request));
     }
 
     @PutMapping("/profile/{userId}")
-    public ResponseEntity<StudentProfile> updateProfile(@PathVariable Long userId, @RequestBody StudentProfileRequest request){
+    public ResponseEntity<StudentProfile> updateProfile(@PathVariable Long userId, @Valid @RequestBody StudentProfileRequest request){
         return ResponseEntity.ok(studentService.updateProfile(userId,request));
     }
 
@@ -55,7 +56,7 @@ public class StudentController {
     @PostMapping("/profile/{studentId}/project")
     public ResponseEntity<Project> addProject(
             @PathVariable Long studentId,
-            @RequestBody ProjectRequest request) {
+            @Valid @RequestBody ProjectRequest request) {
         return ResponseEntity.ok(studentService.addProject(studentId, request));
     }
 

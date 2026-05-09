@@ -7,6 +7,7 @@ import com.talenttalk.authservice.repository.UserRepository;
 import com.talenttalk.authservice.service.EmailVerificationService;
 import com.talenttalk.authservice.util.JwtUtil;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,6 +33,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(
+            @Valid
             @RequestBody RegisterRequest request)
             throws MessagingException {
 
@@ -70,7 +72,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
-            @RequestBody LoginRequest request) {
+            @Valid @RequestBody LoginRequest request) {
 
         // Check if user exists
         User user = userRepository.findByEmail(request.getEmail())

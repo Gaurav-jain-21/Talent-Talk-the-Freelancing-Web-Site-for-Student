@@ -6,6 +6,7 @@ import com.talenttalk.jobservice.entity.Application;
 import com.talenttalk.jobservice.entity.ApplicationStatus;
 import com.talenttalk.jobservice.entity.Job;
 import com.talenttalk.jobservice.service.JobService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class JobController {
 
     private final JobService jobService;
     @PostMapping("/post")
-    public ResponseEntity<Job> postJob(@RequestBody JobRequest request) {
+    public ResponseEntity<Job> postJob(@Valid @RequestBody JobRequest request) {
         return ResponseEntity.ok(jobService.createJob(request));
     }
 
@@ -54,7 +55,7 @@ public class JobController {
 
     @PostMapping("/apply")
     public ResponseEntity<Application> applyToJob(
-            @RequestBody ApplicationRequest request) {
+            @Valid @RequestBody ApplicationRequest request) {
         return ResponseEntity.ok(jobService.applyToJob(request));
     }
     @GetMapping("/{jobId}/applications")

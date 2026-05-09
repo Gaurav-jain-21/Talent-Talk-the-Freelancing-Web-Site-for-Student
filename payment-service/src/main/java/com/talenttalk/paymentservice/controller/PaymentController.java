@@ -4,6 +4,7 @@ import com.talenttalk.paymentservice.dto.PaymentRequest;
 import com.talenttalk.paymentservice.dto.PaymentVerifyRequest;
 import com.talenttalk.paymentservice.entity.Payment;
 import com.talenttalk.paymentservice.service.PaymentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class PaymentController {
     private final PaymentService paymentService;
     @PostMapping("/create")
     public ResponseEntity<Payment> createOrder(
-            @RequestBody PaymentRequest request) throws Exception {
+            @Valid @RequestBody PaymentRequest request) throws Exception {
         return ResponseEntity.ok(paymentService.createOrder(request));
     }
 

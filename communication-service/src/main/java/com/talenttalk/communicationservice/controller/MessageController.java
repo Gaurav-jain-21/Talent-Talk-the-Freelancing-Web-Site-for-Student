@@ -3,6 +3,7 @@ package com.talenttalk.communicationservice.controller;
 import com.talenttalk.communicationservice.dto.MessageRequest;
 import com.talenttalk.communicationservice.entity.Message;
 import com.talenttalk.communicationservice.service.MessageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class MessageController {
     private final MessageService messageService;
     @PostMapping("/send")
     public ResponseEntity<Message> sendMessage(
-            @RequestBody MessageRequest request) {
+            @Valid @RequestBody MessageRequest request) {
         return ResponseEntity.ok(messageService.sendMessage(request));
     }
 

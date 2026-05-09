@@ -3,6 +3,7 @@ package com.talenttalk.communicationservice.controller;
 import com.talenttalk.communicationservice.dto.EmailRequest;
 import com.talenttalk.communicationservice.service.EmailService;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,7 @@ public class EmailController {
 
     @PostMapping("/send")
     public ResponseEntity<String> sendEmail(
-            @RequestBody EmailRequest request) throws MessagingException {
+            @Valid @RequestBody EmailRequest request) throws MessagingException {
         emailService.sendEmail(request);
         return ResponseEntity.ok("Email sent successfully to " + request.getToEmail());
     }

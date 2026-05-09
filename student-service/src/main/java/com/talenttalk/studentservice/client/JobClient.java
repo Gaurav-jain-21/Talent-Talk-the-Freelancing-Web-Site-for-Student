@@ -1,0 +1,14 @@
+package com.talenttalk.studentservice.client;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import java.util.List;
+
+@FeignClient(name = "JOB-SERVICE")
+public interface JobClient {
+
+    @GetMapping("/job/student/{studentId}")
+    List<Object> getStudentApplications(@PathVariable Long studentId);
+    @GetMapping("/job/all")
+    List<Object> getAllJobs();
+}

@@ -67,4 +67,16 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getProjectsByStudentId(studentId));
     }
 
+    @GetMapping("/profile/{studentId}/applications")
+    public ResponseEntity<List<Object>> getMyApplications(
+            @PathVariable Long studentId) {
+        return ResponseEntity.ok(
+                studentService.getMyApplications(studentId));
+    }
+
+    @GetMapping("/jobs")
+    public ResponseEntity<List<Object>> browseJobs() {
+        return ResponseEntity.ok(studentService.browseJobs());
+    }
+
 }

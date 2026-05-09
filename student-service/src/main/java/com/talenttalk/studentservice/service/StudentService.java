@@ -2,6 +2,7 @@ package com.talenttalk.studentservice.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.talenttalk.studentservice.client.JobClient;
 import com.talenttalk.studentservice.dto.ProjectRequest;
 import com.talenttalk.studentservice.dto.StudentProfileRequest;
 import com.talenttalk.studentservice.entity.Project;
@@ -119,5 +120,15 @@ public class StudentService {
         return projectRepository.findByStudentId(studentId);
     }
 
+    @Autowired
+    private JobClient jobClient;
+
+    public List<Object> getMyApplications(Long studentId) {
+        return jobClient.getStudentApplications(studentId);
+    }
+
+    public List<Object> browseJobs() {
+        return jobClient.getAllJobs();
+    }
 
 }

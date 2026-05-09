@@ -1,6 +1,8 @@
 package com.talenttalk.companyservice.controller;
 
 import com.talenttalk.companyservice.dto.CompanyProfileRequest;
+import com.talenttalk.companyservice.dto.EmailRequestDto;
+import com.talenttalk.companyservice.dto.PaymentRequestDto;
 import com.talenttalk.companyservice.entity.CompanyProfile;
 import com.talenttalk.companyservice.service.CompanyService;
 import jakarta.validation.Valid;
@@ -72,5 +74,40 @@ public class CompanyController {
             @RequestParam String status) {
         return ResponseEntity.ok(
                 companyService.updateApplicationStatus(applicationId, status));
+    }
+
+    @PostMapping("/email/send")
+    public ResponseEntity<String> sendEmail(
+            @RequestBody EmailRequestDto request) {
+        return ResponseEntity.ok(
+                companyService.sendStatusEmail(
+                        request.getToEmail(),
+                        request.getStudentName(),
+                        request.getJobTitle(),
+                        request.getCompanyName(),
+                        request.getStatus()
+                )
+        );
+    }
+
+
+    @PostMapping("/payment/create")
+    public ResponseEntity<Object> createPayment(
+            @RequestBody PaymentRequestDto request) {
+        return ResponseEntity.ok(
+                companyService.createPayment(
+                        request.getCompanyId(),
+                        request.getJobId(),
+                        request.getStudentId(),
+                        request.getAmount()
+                )
+        );
+    }
+
+    @GetMapping("/{companyId}/payments")
+    public ResponseEntity<Object> getPayments(
+            @PathVariable Long companyId) {
+        return ResponseEntity.ok(
+                companyService.getPaymentHistory(companyId));
     }
 }

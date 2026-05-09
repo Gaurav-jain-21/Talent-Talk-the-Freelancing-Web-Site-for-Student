@@ -1,8 +1,12 @@
 package com.talenttalk.companyservice.service;
 
+import com.talenttalk.companyservice.client.CommunicationClient;
 import com.talenttalk.companyservice.client.JobClient;
+import com.talenttalk.companyservice.client.PaymentClient;
 import com.talenttalk.companyservice.client.StudentClient;
 import com.talenttalk.companyservice.dto.CompanyProfileRequest;
+import com.talenttalk.companyservice.dto.EmailRequestDto;
+import com.talenttalk.companyservice.dto.PaymentRequestDto;
 import com.talenttalk.companyservice.entity.CompanyProfile;
 import com.talenttalk.companyservice.repository.CompanyProfileRepository;
 import lombok.RequiredArgsConstructor;
@@ -84,5 +88,31 @@ public class CompanyService {
 
     public Object updateApplicationStatus(Long applicationId, String status) {
         return jobClient.updateApplicationStatus(applicationId, status);
+    }
+    private final CommunicationClient communicationClient;
+    public String sendStatusEmail(
+            String toEmail,
+            String studentName,
+            String jobTitle,
+            String companyName,
+            String status) {
+        return communicationClient.sendEmail(
+                new EmailRequestDto(
+                        toEmail, studentName,
+                        jobTitle, companyName, status
+                )
+        );
+    }
+
+    private final PaymentClient paymentClient;
+
+    public Object createPayment(Long companyId, Long jobId,
+                                Long studentId, Double amount) {
+        return paymentClient.createPaymentOrder(
+                new PaymentRequestDto(companyId, jobId, studentId, amount)
+        );
+    }
+    public Object getPaymentHistory(Long companyId) {
+        return paymentClient.getCompanyPayments(companyId);
     }
 }

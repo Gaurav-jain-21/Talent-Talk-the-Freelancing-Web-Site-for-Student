@@ -26,7 +26,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/auth/register",
             "/auth/login",
             "/auth/verify",
-            "/auth/resend-verification"
+            "/auth/resend-verification",
+            "/oauth2/**",
+            "/login/oauth2/**",
+            "/auth/oauth2/user",
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/api-docs/**",
+            "/v3/api-docs/**"
     );
 
     @Override

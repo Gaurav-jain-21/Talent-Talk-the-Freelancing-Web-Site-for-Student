@@ -46,7 +46,7 @@ public class JobController {
         return ResponseEntity.ok(jobService.getJobById(jobId));
     }
 
-    @PatchMapping("/{jobId}/close")
+    @PostMapping("/{jobId}/close")
     public ResponseEntity<Job> closeJob(
             @PathVariable Long jobId) {
         return ResponseEntity.ok(jobService.closeJob(jobId));
@@ -78,7 +78,7 @@ public class JobController {
     }
 
 
-    @PatchMapping("/application/{applicationId}/withdraw")
+    @PostMapping("/application/{applicationId}/withdraw")
     public ResponseEntity<Application> withdraw(
             @PathVariable Long applicationId) {
         return ResponseEntity.ok(jobService.withdrawApplication(applicationId));

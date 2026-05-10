@@ -1,10 +1,7 @@
 package com.talenttalk.adminservice.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,6 +17,6 @@ public interface JobClient {
     @DeleteMapping("/job/{jobId}/delete")
     void deleteJob(@PathVariable Long jobId);
 
-    @PatchMapping("/job/{jobId}/close")
+    @PostMapping("/job/{jobId}/close")
     Object closeJob(@PathVariable Long jobId);
 }

@@ -18,6 +18,8 @@ public interface JobClient {
             @PathVariable Long applicationId,
             @RequestParam String status);
 
-    @PatchMapping("/job/application/{applicationId}/withdraw")
+    @PostMapping("/job/application/{applicationId}/withdraw")
     Object withdrawApplication(@PathVariable Long applicationId);
+    @PostMapping("/job/{jobId}/close")  // was @PatchMapping
+    Object closeJob(@PathVariable Long jobId);
 }

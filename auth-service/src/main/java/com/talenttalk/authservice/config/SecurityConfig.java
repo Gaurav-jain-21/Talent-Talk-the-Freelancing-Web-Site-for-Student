@@ -1,6 +1,9 @@
 package com.talenttalk.authservice.config;
 
 import com.talenttalk.authservice.filter.JwtFilter;
+import com.talenttalk.authservice.handler.OAuth2FailureHandler;
+import com.talenttalk.authservice.handler.OAuth2SuccessHandler;
+import com.talenttalk.authservice.service.OAuth2UserService;
 import com.talenttalk.authservice.service.UserDetailsServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,9 @@ public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtFilter jwtFilter;
+    private final OAuth2UserService oAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http)
@@ -32,31 +38,44 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        // public endpoints
                         .requestMatchers(
                                 "/auth/register",
                                 "/auth/login",
-                                "/auth/verify",              // ADD THIS
-                                "/auth/resend-verification"
+                                "/auth/verify",
+                                "/auth/resend-verification",
+                                "/oauth2/**",           // OAuth routes
+                                "/login/oauth2/**",     // OAuth callback
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/api-docs/**",
+                                "/v3/api-docs/**"
                         ).permitAll()
-                        // everything else needs authentication
                         .anyRequest().authenticated()
                 )
 
-                // STATELESS — no sessions anymore
+                // Stateless JWT
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // what happens when not authenticated
+                // OAuth2 Login configuration
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oAuth2UserService)
+                        )
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
+                )
+
+                // Unauthorized handler
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((req, res, e) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            res.getWriter().write("Unauthorized: Please login first");
+                            res.getWriter().write("Unauthorized: Please login");
                         })
                 )
 
-                // add JWT filter BEFORE Spring's default auth filter
+                // JWT filter
                 .addFilterBefore(
                         jwtFilter,
                         UsernamePasswordAuthenticationFilter.class

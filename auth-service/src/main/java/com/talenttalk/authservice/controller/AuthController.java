@@ -181,4 +181,22 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/oauth2/user")
+    public ResponseEntity<Map<String, String>> getOAuthUser(
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.substring(7);
+
+        if (!jwtUtil.isTokenValid(token)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        Map<String, String> response = new HashMap<>();
+        response.put("email", jwtUtil.extractEmail(token));
+        response.put("role", jwtUtil.extractRole(token));
+        response.put("userId", jwtUtil.extractUserId(token).toString());
+
+        return ResponseEntity.ok(response);
+    }
 }

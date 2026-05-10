@@ -1,6 +1,5 @@
 package com.talenttalk.authservice.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,15 +17,16 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    // ADD THESE TWO NEW FIELDS
     @Column(nullable = false)
     private boolean isVerified = false;
 
     private String verificationToken;
+    private String provider;
+    private String providerId;
+    private String imageUrl;
 }

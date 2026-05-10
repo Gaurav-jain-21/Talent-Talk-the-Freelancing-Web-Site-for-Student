@@ -7,6 +7,8 @@ import com.talenttalk.paymentservice.dto.PaymentRequest;
 import com.talenttalk.paymentservice.dto.PaymentVerifyRequest;
 import com.talenttalk.paymentservice.entity.Payment;
 import com.talenttalk.paymentservice.entity.PaymentStatus;
+import com.talenttalk.paymentservice.kafka.PaymentSuccessEvent;
+import com.talenttalk.paymentservice.kafka.PaymentSuccessProducer;
 import com.talenttalk.paymentservice.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -52,34 +54,46 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
-    public String verifyPayment(PaymentVerifyRequest request) throws Exception {
+    private final PaymentSuccessProducer paymentSuccessProducer;
 
-        String data = request.getRazorpayOrderId() + "|" + request.getRazorpayPaymentId();
+    public String verifyPayment(PaymentVerifyRequest request)
+            throws Exception {
+
+        String data = request.getRazorpayOrderId()
+                + "|" + request.getRazorpayPaymentId();
 
         Mac mac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKey = new SecretKeySpec(keySecret.getBytes(), "HmacSHA256");
+        SecretKeySpec secretKey = new SecretKeySpec(
+                keySecret.getBytes(), "HmacSHA256");
         mac.init(secretKey);
         byte[] hash = mac.doFinal(data.getBytes());
         String generatedSignature = HexFormat.of().formatHex(hash);
 
-        if (generatedSignature.equals(request.getRazorpaySignature())) {
-            Payment payment = paymentRepository
-                    .findByRazorpayOrderId(request.getRazorpayOrderId())
-                    .orElseThrow(() -> new RuntimeException("Payment not found"));
+        Payment payment = paymentRepository
+                .findByRazorpayOrderId(request.getRazorpayOrderId())
+                .orElseThrow(() -> new RuntimeException(
+                        "Payment not found"));
 
+        if (generatedSignature.equals(request.getRazorpaySignature())) {
             payment.setRazorpayPaymentId(request.getRazorpayPaymentId());
             payment.setStatus(PaymentStatus.SUCCESS);
             paymentRepository.save(payment);
 
+            // Publish Kafka event — job service will activate job
+            PaymentSuccessEvent event = new PaymentSuccessEvent(
+                    payment.getId(),
+                    payment.getCompanyId(),
+                    payment.getJobId(),
+                    payment.getStudentId(),
+                    payment.getAmount(),
+                    request.getRazorpayPaymentId()
+            );
+            paymentSuccessProducer.publishPaymentSuccess(event);
+
             return "Payment verified successfully";
         } else {
-            Payment payment = paymentRepository
-                    .findByRazorpayOrderId(request.getRazorpayOrderId())
-                    .orElseThrow(() -> new RuntimeException("Payment not found"));
-
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);
-
             return "Payment verification failed";
         }
     }

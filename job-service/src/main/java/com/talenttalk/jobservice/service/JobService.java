@@ -5,10 +5,11 @@ import com.talenttalk.jobservice.dto.JobRequest;
 import com.talenttalk.jobservice.entity.Application;
 import com.talenttalk.jobservice.entity.ApplicationStatus;
 import com.talenttalk.jobservice.entity.Job;
+import com.talenttalk.jobservice.kafka.ApplicationStatusEvent;
+import com.talenttalk.jobservice.kafka.ApplicationStatusProducer;
 import com.talenttalk.jobservice.repository.ApplicationRepository;
 import com.talenttalk.jobservice.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,11 +18,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JobService {
 
-    @Autowired
-    private JobRepository jobRepository;
-    @Autowired
+    // Use ONLY @RequiredArgsConstructor with final fields
+    // Never mix @Autowired with @RequiredArgsConstructor
+    private final JobRepository jobRepository;
     private final ApplicationRepository applicationRepository;
+    private final ApplicationStatusProducer statusProducer;
 
+    // Create job
     public Job createJob(JobRequest request) {
         Job job = new Job();
         job.setCompanyId(request.getCompanyId());
@@ -35,43 +38,57 @@ public class JobService {
         job.setOpenings(request.getOpenings());
         job.setLastDateToApply(request.getLastDateToApply());
         job.setIsActive(true);
-
         return jobRepository.save(job);
     }
 
+    // Get all active jobs
     public List<Job> getAllActiveJobs() {
         return jobRepository.findAll()
                 .stream()
-                .filter(job -> job.getIsActive())
+                .filter(Job::getIsActive)
                 .toList();
     }
 
+    // Get jobs by company
     public List<Job> getJobsByCompany(Long companyId) {
         return jobRepository.findJobByCompanyId(companyId);
     }
 
+    // Get single job
     public Job getJobById(Long jobId) {
         return jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException(
+                        "Job not found"));
     }
 
+    // Close job
     public Job closeJob(Long jobId) {
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException(
+                        "Job not found"));
         job.setIsActive(false);
         return jobRepository.save(job);
     }
 
+    // Delete job
+    public void deleteJob(Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Job not found"));
+        jobRepository.delete(job);
+    }
 
+    // Apply to job
     public Application applyToJob(ApplicationRequest request) {
-
         boolean alreadyApplied = applicationRepository
                 .findAllByStudentId(request.getStudentId())
                 .stream()
-                .anyMatch(app -> app.getJobId().equals(request.getJobId()));
+                .anyMatch(app -> app.getJobId()
+                        .equals(request.getJobId()));
 
         if (alreadyApplied) {
-            throw new RuntimeException("You have already applied to this job");
+            throw new RuntimeException(
+                    "You have already applied to this job");
         }
 
         Application application = new Application();
@@ -79,41 +96,73 @@ public class JobService {
         application.setStudentId(request.getStudentId());
         application.setStudentName(request.getStudentName());
         application.setStudentEmail(request.getStudentEmail());
-        application.setStatus(ApplicationStatus.PENDING); // always PENDING on apply
+        application.setStatus(ApplicationStatus.PENDING);
 
         return applicationRepository.save(application);
     }
 
+    // Get applications by job
     public List<Application> getApplicationsByJob(Long jobId) {
         return applicationRepository.findAllByJobId(jobId);
     }
 
-    public List<Application> getApplicationsByStudent(Long studentId) {
+    // Get applications by student
+    public List<Application> getApplicationsByStudent(
+            Long studentId) {
         return applicationRepository.findAllByStudentId(studentId);
     }
 
-    public Application updateApplicationStatus(Long applicationId, ApplicationStatus status) {
-        Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new RuntimeException("Application not found"));
+    // Update application status + publish Kafka event
+    // Only ONE definition of this method
+    public Application updateApplicationStatus(
+            Long applicationId, ApplicationStatus status) {
+
+        Application application = applicationRepository
+                .findById(applicationId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Application not found"));
 
         application.setStatus(status);
-        return applicationRepository.save(application);
+        Application saved = applicationRepository.save(application);
+
+        // Publish Kafka event only for SELECTED or REJECTED
+        if (status == ApplicationStatus.SELECTED
+                || status == ApplicationStatus.REJECTED) {
+
+            Job job = jobRepository
+                    .findById(application.getJobId())
+                    .orElse(null);
+
+            ApplicationStatusEvent event = new ApplicationStatusEvent(
+                    application.getId(),
+                    application.getJobId(),
+                    application.getStudentId(),
+                    application.getStudentName(),
+                    application.getStudentEmail(),
+                    job != null ? job.getTitle() : "Job",
+                    job != null ? job.getCompanyName() : "Company",
+                    status.name()
+            );
+
+            statusProducer.publishStatusChanged(event);
+        }
+
+        return saved;
     }
 
+    // Withdraw application
     public Application withdrawApplication(Long applicationId) {
-        Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new RuntimeException("Application not found"));
+        Application application = applicationRepository
+                .findById(applicationId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Application not found"));
 
         if (application.getStatus() != ApplicationStatus.PENDING) {
-            throw new RuntimeException("Can only withdraw a pending application");
+            throw new RuntimeException(
+                    "Can only withdraw a pending application");
         }
 
         application.setStatus(ApplicationStatus.WITHDRAWN);
         return applicationRepository.save(application);
-    }
-    public void deleteJob(Long jobId) {
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
-        jobRepository.delete(job);
     }
 }

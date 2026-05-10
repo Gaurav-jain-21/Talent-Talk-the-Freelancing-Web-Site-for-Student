@@ -4,6 +4,7 @@ import com.talenttalk.authservice.entity.Role;
 import com.talenttalk.authservice.entity.User;
 import com.talenttalk.authservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -17,6 +18,7 @@ public class OAuth2UserService
         extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest request) {
@@ -45,7 +47,13 @@ public class OAuth2UserService
             newUser.setProviderId(providerId);
             newUser.setRole(Role.STUDENT);
             newUser.setVerified(true);
-            newUser.setPassword(null);
+
+            // Set placeholder password for OAuth users
+            // They will never use this password
+            newUser.setPassword(
+                    passwordEncoder.encode("OAUTH_USER_" + providerId)
+            );
+
             userRepository.save(newUser);
         }
 

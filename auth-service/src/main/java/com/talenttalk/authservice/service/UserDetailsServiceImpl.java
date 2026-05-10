@@ -17,14 +17,23 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email)
+            throws UsernameNotFoundException {
+
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "User not found: " + email));
+
+        // Handle OAuth users who have placeholder password
+        String password = user.getPassword() != null
+                ? user.getPassword()
+                : "";
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
-                user.getPassword(),
-                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                password,
+                List.of(new SimpleGrantedAuthority(
+                        "ROLE_" + user.getRole().name()))
         );
     }
 }

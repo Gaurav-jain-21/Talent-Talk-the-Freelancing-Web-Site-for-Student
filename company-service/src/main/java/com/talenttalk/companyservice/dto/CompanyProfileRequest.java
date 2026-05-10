@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 public class CompanyProfileRequest {
 
-    @NotNull(message = "User ID cannot be null")
     private Long userId;
 
     @NotBlank(message = "Company name cannot be blank")
@@ -14,7 +13,6 @@ public class CompanyProfileRequest {
             message = "Company name must be 2-100 characters")
     private String companyName;
 
-    @NotBlank(message = "Email cannot be blank")
     @Email(message = "Must be a valid email address")
     private String email;
 

@@ -8,14 +8,13 @@ import lombok.Data;
 @Data
 public class StudentProfileRequest {
 
-    @NotNull(message = "User ID cannot be null")
+
     private Long userId;
 
     @NotBlank(message = "Full name cannot be blank")
     @Size(min = 2, max = 100, message = "Name must be 2-100 characters")
     private String fullName;
 
-    @NotBlank(message = "Email cannot be blank")
     @Email(message = "Must be a valid email address")
     private String email;
 

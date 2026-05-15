@@ -61,8 +61,8 @@ export default function JobApplicants() {
                 <div className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-400 font-black">{initials(pick(applicant, ["name", "studentName"]))}</div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xl font-black text-white">{pick(applicant, ["name", "studentName"], "Student")}</p>
-                  <p className="truncate text-sm text-slate-400">{pick(applicant, ["email"], "")}</p>
-                  <p className="mt-1 text-xs text-slate-500">Applied {formatDate(pick(applicant, ["appliedDate", "createdAt"]))}</p>
+                  <p className="truncate text-sm text-slate-400">{pick(applicant, ["email", "studentEmail"], "")}</p>
+                  <p className="mt-1 text-xs text-slate-500">Applied {formatDate(pick(applicant, ["appliedDate", "appliedAt", "createdAt"]))}</p>
                 </div>
                 <StatusBadge status={pick(applicant, ["status"], "PENDING")} />
               </div>

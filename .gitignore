@@ -40,3 +40,6 @@ tmp/
 *.jks
 *.p12
 *.key
+
+*.application.properties
+*.application.yml

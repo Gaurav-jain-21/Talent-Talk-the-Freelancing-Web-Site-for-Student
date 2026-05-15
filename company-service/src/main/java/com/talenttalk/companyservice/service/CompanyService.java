@@ -49,6 +49,7 @@ public class CompanyService {
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
 
         profile.setCompanyName(request.getCompanyName());
+        profile.setEmail(request.getEmail());
         profile.setPhone(request.getPhone());
         profile.setWebsite(request.getWebsite());
         profile.setIndustry(request.getIndustry());

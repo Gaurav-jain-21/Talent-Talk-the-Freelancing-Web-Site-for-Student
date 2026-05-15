@@ -14,12 +14,15 @@ import MyApplications from "./pages/student/MyApplications";
 import Interview from "./pages/student/Interview";
 import Chat from "./pages/Chat";
 import CompanyDashboard from "./pages/company/CompanyDashboard";
+import Applications from "./pages/company/Applications";
+import ApplicationDetail from "./pages/company/ApplicationDetail";
 import PostJob from "./pages/company/PostJob";
 import MyJobs from "./pages/company/MyJobs";
 import JobApplicants from "./pages/company/JobApplicants";
 import StudentList from "./pages/company/StudentList";
 import StudentDetail from "./pages/company/StudentDetail";
 import InterviewResults from "./pages/company/InterviewResults";
+import CompanyProfile from "./pages/company/CompanyProfile";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageStudents from "./pages/admin/ManageStudents";
 import ManageJobs from "./pages/admin/ManageJobs";
@@ -51,6 +54,8 @@ export default function App() {
             <Route element={<ProtectedRoute role="COMPANY" />}>
               <Route element={<AppLayout role="COMPANY" />}>
                 <Route path="/company/dashboard" element={<CompanyDashboard />} />
+                <Route path="/company/applications" element={<Applications />} />
+                <Route path="/company/applications/:applicationId" element={<ApplicationDetail />} />
                 <Route path="/company/jobs/post" element={<PostJob />} />
                 <Route path="/company/jobs" element={<MyJobs />} />
                 <Route path="/company/jobs/:jobId/applicants" element={<JobApplicants />} />
@@ -58,6 +63,7 @@ export default function App() {
                 <Route path="/company/students/:userId" element={<StudentDetail />} />
                 <Route path="/company/interviews" element={<InterviewResults />} />
                 <Route path="/company/chat" element={<Chat />} />
+                <Route path="/company/profile" element={<CompanyProfile />} />
               </Route>
             </Route>
 
@@ -76,4 +82,3 @@ export default function App() {
     </Router>
   );
 }
-

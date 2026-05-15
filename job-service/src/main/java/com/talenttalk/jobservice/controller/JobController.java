@@ -46,6 +46,13 @@ public class JobController {
         return ResponseEntity.ok(jobService.getJobById(jobId));
     }
 
+    @PutMapping("/{jobId}")
+    public ResponseEntity<Job> updateJob(
+            @PathVariable Long jobId,
+            @Valid @RequestBody JobRequest request) {
+        return ResponseEntity.ok(jobService.updateJob(jobId, request));
+    }
+
     @PostMapping("/{jobId}/close")
     public ResponseEntity<Job> closeJob(
             @PathVariable Long jobId) {

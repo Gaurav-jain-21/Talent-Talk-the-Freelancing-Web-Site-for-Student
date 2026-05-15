@@ -11,6 +11,9 @@ export default function StudentDetail() {
   const profile = useAsync(() => companyApi.student(userId), [userId]);
   const projects = useAsync(() => studentApi.projects(userId), [userId], { toast: false });
   const student = profile.data || {};
+  const resumeUrl = pick(student, ["resumeUrl", "resume", "resumeLink"], "");
+  const githubUrl = pick(student, ["githubUrl", "github", "githubLink"], "");
+  const linkedinUrl = pick(student, ["linkedinUrl", "linkedin", "linkedInUrl", "linkedinLink"], "");
 
   if (profile.loading) return <Page><Skeleton className="h-96 rounded-[2rem]" /></Page>;
 
@@ -28,9 +31,23 @@ export default function StudentDetail() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <GhostButton><FileText className="h-4 w-4" /> Resume</GhostButton>
-            <GhostButton><ExternalLink className="h-4 w-4" /> GitHub</GhostButton>
-            <GhostButton><ExternalLink className="h-4 w-4" /> LinkedIn</GhostButton>
+            {resumeUrl ? (
+              <a href={resumeUrl} target="_blank" rel="noreferrer">
+                <GhostButton><FileText className="h-4 w-4" /> Resume</GhostButton>
+              </a>
+            ) : (
+              <GhostButton disabled><FileText className="h-4 w-4" /> No Resume</GhostButton>
+            )}
+            {githubUrl && (
+              <a href={githubUrl} target="_blank" rel="noreferrer">
+                <GhostButton><ExternalLink className="h-4 w-4" /> GitHub</GhostButton>
+              </a>
+            )}
+            {linkedinUrl && (
+              <a href={linkedinUrl} target="_blank" rel="noreferrer">
+                <GhostButton><ExternalLink className="h-4 w-4" /> LinkedIn</GhostButton>
+              </a>
+            )}
           </div>
         </div>
       </section>
@@ -46,6 +63,12 @@ export default function StudentDetail() {
           <h3 className="mb-4 text-xl font-black text-white">Education</h3>
           <p className="text-white">{pick(student, ["college"], "")}</p>
           <p className="text-sm text-slate-400">{pick(student, ["degree"], "")}</p>
+        </GlassCard>
+        <GlassCard className="p-6 xl:col-span-2">
+          <h3 className="mb-4 text-xl font-black text-white">About</h3>
+          <p className="text-sm leading-6 text-slate-400">
+            {pick(student, ["bio", "about"], "No bio added yet.")}
+          </p>
         </GlassCard>
       </div>
 

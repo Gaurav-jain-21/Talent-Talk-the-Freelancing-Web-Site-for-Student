@@ -27,18 +27,18 @@ const nav = {
     ["Dashboard", "/student/dashboard", Gauge],
     ["Browse Jobs", "/student/jobs", BriefcaseBusiness],
     ["Applications", "/student/applications", ClipboardList],
-    ["Interviews", "/student/dashboard", CalendarClock],
     ["Messages", "/student/chat", MessageSquareText],
     ["Profile", "/student/profile", UserRound],
   ],
   COMPANY: [
     ["Dashboard", "/company/dashboard", Gauge],
+    ["Applications", "/company/applications", ClipboardList],
     ["Post Job", "/company/jobs/post", PlusCircle],
     ["My Jobs", "/company/jobs", BriefcaseBusiness],
     ["Students", "/company/students", Users],
     ["Interviews", "/company/interviews", CalendarClock],
     ["Messages", "/company/chat", MessageSquareText],
-    ["Profile", "/company/dashboard", Building2],
+    ["Profile", "/company/profile", Building2],
   ],
   ADMIN: [
     ["Dashboard", "/admin/dashboard", ShieldCheck],
@@ -52,6 +52,10 @@ export default function AppLayout({ role }) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const links = nav[role] || [];
+  const isActiveLink = (href, isActive) =>
+    isActive ||
+    location.pathname === href ||
+    (href === "/company/applications" && location.pathname.startsWith("/company/applications"));
 
   return (
     <MeshBackground>
@@ -71,7 +75,7 @@ export default function AppLayout({ role }) {
                 to={href}
                 className={({ isActive }) =>
                   `group relative flex items-center gap-3 overflow-hidden rounded-2xl px-4 py-3 text-sm font-bold transition ${
-                    isActive || location.pathname === href
+                    isActiveLink(href, isActive)
                       ? "bg-indigo-500/15 text-white shadow-[0_0_28px_rgba(99,102,241,0.18)]"
                       : "text-slate-400 hover:bg-white/[0.05] hover:text-white"
                   }`
@@ -79,7 +83,7 @@ export default function AppLayout({ role }) {
               >
                 {({ isActive }) => (
                   <>
-                    {(isActive || location.pathname === href) && (
+                    {isActiveLink(href, isActive) && (
                       <motion.span layoutId={`${role}-nav`} className="absolute left-0 top-2 h-8 w-1 rounded-full bg-cyan-300 shadow-[0_0_22px_rgba(6,182,212,0.75)]" />
                     )}
                     <Icon className="relative h-5 w-5" />

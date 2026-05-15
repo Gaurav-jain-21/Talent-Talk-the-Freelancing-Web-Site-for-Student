@@ -1,5 +1,6 @@
 package com.talenttalk.authservice.controller;
 
+import com.talenttalk.authservice.dto.ChangePasswordRequest;
 import com.talenttalk.authservice.dto.LoginRequest;
 import com.talenttalk.authservice.dto.RegisterRequest;
 import com.talenttalk.authservice.entity.User;
@@ -161,6 +162,26 @@ public class AuthController {
         );
 
         return ResponseEntity.ok("Verification email resent successfully");
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(
+                request.getCurrentPassword(),
+                user.getPassword())) {
+            return ResponseEntity.badRequest()
+                    .body("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Password changed successfully");
     }
 
     // Validate token endpoint

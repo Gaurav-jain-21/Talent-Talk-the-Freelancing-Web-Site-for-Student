@@ -61,6 +61,26 @@ public class JobService {
                         "Job not found"));
     }
 
+    // Update job
+    public Job updateJob(Long jobId, JobRequest request) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Job not found"));
+
+        job.setCompanyId(request.getCompanyId());
+        job.setCompanyName(request.getCompanyName());
+        job.setTitle(request.getTitle());
+        job.setDescription(request.getDescription());
+        job.setLocation(request.getLocation());
+        job.setSalary(request.getSalary());
+        job.setSkillsRequired(request.getSkillsRequired());
+        job.setJobType(request.getJobType());
+        job.setOpenings(request.getOpenings());
+        job.setLastDateToApply(request.getLastDateToApply());
+
+        return jobRepository.save(job);
+    }
+
     // Close job
     public Job closeJob(Long jobId) {
         Job job = jobRepository.findById(jobId)
@@ -97,6 +117,7 @@ public class JobService {
         application.setStudentName(request.getStudentName());
         application.setStudentEmail(request.getStudentEmail());
         application.setStatus(ApplicationStatus.PENDING);
+        application.setAppliedAt(java.time.LocalDateTime.now());
 
         return applicationRepository.save(application);
     }
@@ -123,6 +144,7 @@ public class JobService {
                         "Application not found"));
 
         application.setStatus(status);
+        application.setUpdatedAt(java.time.LocalDateTime.now());
         Application saved = applicationRepository.save(application);
 
         // Publish Kafka event only for SELECTED or REJECTED
@@ -163,6 +185,7 @@ public class JobService {
         }
 
         application.setStatus(ApplicationStatus.WITHDRAWN);
+        application.setUpdatedAt(java.time.LocalDateTime.now());
         return applicationRepository.save(application);
     }
 }

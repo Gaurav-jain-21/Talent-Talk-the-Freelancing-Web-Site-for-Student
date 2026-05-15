@@ -1,8 +1,17 @@
 import { useState } from "react";
-import { FileUp, FolderGit2, Save } from "lucide-react";
+import { FileUp, FolderGit2, Save, Plus, X, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 import { studentApi } from "../../api/services";
-import { Badge, EmptyState, Field, GhostButton, GlassCard, GradientButton, Skeleton, TextArea } from "../../components/ui/Primitives";
+import {
+  Badge,
+  EmptyState,
+  Field,
+  GhostButton,
+  GlassCard,
+  GradientButton,
+  Skeleton,
+  TextArea,
+} from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
 import { useAuth } from "../../context/useAuth";
 import { asArray, errorMessage, initials, pick } from "../../utils/format";
@@ -10,12 +19,28 @@ import { useAsync } from "../../utils/useAsync";
 
 export default function StudentProfile() {
   const { user } = useAuth();
-  const profileQuery = useAsync(() => studentApi.profile(user.userId), [user.userId], { toast: false });
-  const projectsQuery = useAsync(() => studentApi.projects(user.userId), [user.userId], { toast: false });
+  const profileQuery = useAsync(
+    () => studentApi.profile(user.userId),
+    [user.userId],
+    { toast: false },
+  );
+  const projectsQuery = useAsync(
+    () => studentApi.projects(user.userId),
+    [user.userId],
+    { toast: false },
+  );
   const profile = profileQuery.data || {};
   const [edit, setEdit] = useState(false);
   const [draft, setDraft] = useState({});
   const [skill, setSkill] = useState("");
+  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [projectForm, setProjectForm] = useState({
+    title: "",
+    description: "",
+    techStack: "",
+    projectUrl: "",
+  });
   const skills = asArray(pick(edit ? draft : profile, ["skills"], []));
   const projects = asArray(projectsQuery.data);
 
@@ -57,6 +82,7 @@ export default function StudentProfile() {
     try {
       await studentApi.uploadResume(user.userId, formData);
       toast.success("Resume uploaded");
+      profileQuery.refresh();
     } catch (error) {
       toast.error(errorMessage(error));
     }
@@ -68,6 +94,31 @@ export default function StudentProfile() {
     setSkill("");
   }
 
+  async function addProject() {
+    if (!projectForm.title.trim()) {
+      toast.error("Project title is required");
+      return;
+    }
+    try {
+      await studentApi.addProject(user.userId, projectForm);
+      toast.success("Project added successfully");
+      setProjectForm({
+        title: "",
+        description: "",
+        techStack: "",
+        projectUrl: "",
+      });
+      projectsQuery.refresh();
+    } catch (error) {
+      toast.error(errorMessage(error));
+    }
+  }
+
+  function removeSkill(skillToRemove) {
+    const updatedSkills = skills.filter((s) => s !== skillToRemove);
+    update("skills", updatedSkills);
+  }
+
   if (profileQuery.loading) {
     return (
       <Page className="space-y-5">
@@ -76,6 +127,8 @@ export default function StudentProfile() {
       </Page>
     );
   }
+
+  const resumeUrl = value("resumeUrl", "");
 
   return (
     <Page className="space-y-6">
@@ -86,15 +139,35 @@ export default function StudentProfile() {
               {initials(value("fullName", user.name))}
             </div>
             <div>
-              <h2 className="text-4xl font-black text-white">{value("fullName", user.name)}</h2>
-              <p className="mt-1 text-slate-300">{value("email", user.email)}</p>
-              <Badge tone="green" className="mt-3">{value("workStatus", "Open to work")}</Badge>
+              <h2 className="text-4xl font-black text-white">
+                {value("fullName", user.name)}
+              </h2>
+              <p className="mt-1 text-slate-300">
+                {value("email", user.email)}
+              </p>
+              <Badge tone="green" className="mt-3">
+                {value("workStatus", "Open to work")}
+              </Badge>
             </div>
           </div>
           {edit ? (
-            <GradientButton onClick={save}><Save className="h-4 w-4" /> Save</GradientButton>
+            <GradientButton onClick={save}>
+              <Save className="h-4 w-4" /> Save
+            </GradientButton>
           ) : (
-            <GhostButton onClick={() => { setDraft({ userId: user.userId, fullName: user.name, email: user.email, ...profile }); setEdit(true); }}>Edit Profile</GhostButton>
+            <GhostButton
+              onClick={() => {
+                setDraft({
+                  userId: user.userId,
+                  fullName: user.name,
+                  email: user.email,
+                  ...profile,
+                });
+                setEdit(true);
+              }}
+            >
+              Edit Profile
+            </GhostButton>
           )}
         </div>
       </section>
@@ -103,21 +176,70 @@ export default function StudentProfile() {
         <GlassCard className="p-6">
           <h3 className="mb-5 text-xl font-black text-white">Personal Info</h3>
           <div className="space-y-4">
-            <Field label="Name" value={value("fullName", user.name)} disabled={!edit} onChange={(event) => update("fullName", event.target.value)} />
-            <Field label="Email" value={value("email", user.email)} disabled={!edit} onChange={(event) => update("email", event.target.value)} />
-            <Field label="College" value={value("college", "")} disabled={!edit} onChange={(event) => update("college", event.target.value)} />
-            <TextArea label="Bio" value={value("bio", "")} disabled={!edit} onChange={(event) => update("bio", event.target.value)} />
+            <Field
+              label="Name"
+              value={value("fullName", user.name)}
+              disabled={!edit}
+              onChange={(event) => update("fullName", event.target.value)}
+            />
+            <Field
+              label="Email"
+              value={value("email", user.email)}
+              disabled={!edit}
+              onChange={(event) => update("email", event.target.value)}
+            />
+            <Field
+              label="College"
+              value={value("college", "")}
+              disabled={!edit}
+              onChange={(event) => update("college", event.target.value)}
+            />
+            <Field
+              label="Degree"
+              value={value("degree", "")}
+              disabled={!edit}
+              onChange={(event) => update("degree", event.target.value)}
+            />
+            <Field
+              label="Graduation Year"
+              type="number"
+              value={value("graduationYear", new Date().getFullYear())}
+              disabled={!edit}
+              onChange={(event) => update("graduationYear", event.target.value)}
+            />
+            <TextArea
+              label="Bio"
+              value={value("bio", "")}
+              disabled={!edit}
+              onChange={(event) => update("bio", event.target.value)}
+            />
           </div>
         </GlassCard>
 
         <GlassCard className="p-6">
           <h3 className="mb-5 text-xl font-black text-white">Skills</h3>
           <div className="mb-5 flex flex-wrap gap-2">
-            {skills.map((item) => <Badge key={item} tone="cyan">{item}</Badge>)}
+            {skills.map((item) => (
+              <div key={item} className="relative">
+                <Badge tone="cyan">{item}</Badge>
+                {edit && (
+                  <button
+                    onClick={() => removeSkill(item)}
+                    className="absolute -right-2 -top-2 rounded-full bg-rose-600 p-0.5 text-white hover:bg-rose-700"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
           {edit && (
             <div className="flex gap-2">
-              <Field label="Add skill" value={skill} onChange={(event) => setSkill(event.target.value)} />
+              <Field
+                label="Add skill"
+                value={skill}
+                onChange={(event) => setSkill(event.target.value)}
+              />
               <GradientButton onClick={addSkill}>Add</GradientButton>
             </div>
           )}
@@ -125,30 +247,197 @@ export default function StudentProfile() {
 
         <GlassCard className="p-6">
           <h3 className="mb-5 text-xl font-black text-white">Resume</h3>
-          <label className="grid min-h-44 cursor-pointer place-items-center rounded-3xl border border-dashed border-cyan-300/35 bg-cyan-400/5 p-6 text-center transition hover:bg-cyan-400/10">
-            <FileUp className="mb-3 h-8 w-8 text-cyan-100" />
-            <span className="font-bold text-white">Drop or select your resume</span>
-            <span className="mt-1 text-sm text-slate-500">PDF/DOC upload uses multipart API</span>
-            <input type="file" className="hidden" onChange={uploadResume} />
-          </label>
+          {resumeUrl ? (
+            <div className="space-y-3">
+              <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
+                <p className="text-sm text-emerald-100">✓ Resume uploaded</p>
+              </div>
+              <button
+                onClick={() => setShowResumeModal(true)}
+                className="w-full"
+              >
+                <GhostButton className="w-full">
+                  <Eye className="h-4 w-4" /> View Resume
+                </GhostButton>
+              </button>
+              {edit && (
+                <label className="block">
+                  <GhostButton className="w-full">
+                    <FileUp className="h-4 w-4" /> Update Resume
+                  </GhostButton>
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={uploadResume}
+                  />
+                </label>
+              )}
+            </div>
+          ) : (
+            <label className="grid min-h-44 cursor-pointer place-items-center rounded-3xl border border-dashed border-cyan-300/35 bg-cyan-400/5 p-6 text-center transition hover:bg-cyan-400/10">
+              <FileUp className="mb-3 h-8 w-8 text-cyan-100" />
+              <span className="font-bold text-white">
+                Drop or select your resume
+              </span>
+              <span className="mt-1 text-sm text-slate-500">
+                PDF/DOC formats supported
+              </span>
+              <input type="file" className="hidden" onChange={uploadResume} />
+            </label>
+          )}
         </GlassCard>
 
         <GlassCard className="p-6">
-          <h3 className="mb-5 text-xl font-black text-white">Projects</h3>
+          <div className="mb-5 flex items-center justify-between">
+            <h3 className="text-xl font-black text-white">Projects</h3>
+            {edit && (
+              <GradientButton
+                onClick={() => setShowProjectForm(!showProjectForm)}
+                className="p-2"
+              >
+                <Plus className="h-4 w-4" />
+              </GradientButton>
+            )}
+          </div>
           {projects.length ? (
             <div className="space-y-3">
               {projects.map((project) => (
-                <div key={pick(project, ["id", "projectId", "title"])} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                  <p className="font-bold text-white">{pick(project, ["title", "name"], "Project")}</p>
-                  <p className="mt-1 text-sm text-slate-400">{pick(project, ["description"], "")}</p>
+                <div
+                  key={pick(project, ["id", "projectId", "title"])}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
+                  <p className="font-bold text-white">
+                    {pick(project, ["title", "name"], "Project")}
+                  </p>
+                  {pick(project, ["techStack"], "") && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {asArray(pick(project, ["techStack"], "")).map((tech) => (
+                        <Badge key={tech} tone="indigo" className="text-xs">
+                          {tech}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <p className="mt-2 text-sm text-slate-400">
+                    {pick(project, ["description"], "")}
+                  </p>
+                  {pick(project, ["projectUrl"], "") && (
+                    <a
+                      href={pick(project, ["projectUrl"], "")}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-block"
+                    >
+                      <GhostButton className="text-xs">
+                        View Project
+                      </GhostButton>
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <EmptyState icon={FolderGit2} title="No projects yet" message="Projects added through the API will appear here." />
+            <EmptyState
+              icon={FolderGit2}
+              title="No projects yet"
+              message="Add your first project to showcase your work."
+            />
           )}
         </GlassCard>
       </div>
+
+      {showProjectForm && edit && (
+        <GlassCard className="p-6">
+          <div className="mb-5 flex items-center justify-between">
+            <h3 className="text-xl font-black text-white">Add Project</h3>
+            <button
+              onClick={() => setShowProjectForm(false)}
+              className="text-slate-400 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="space-y-4">
+            <Field
+              label="Project Title"
+              value={projectForm.title}
+              onChange={(e) =>
+                setProjectForm({ ...projectForm, title: e.target.value })
+              }
+              placeholder="Enter project title"
+            />
+            <TextArea
+              label="Project Description"
+              value={projectForm.description}
+              onChange={(e) =>
+                setProjectForm({ ...projectForm, description: e.target.value })
+              }
+              placeholder="Describe your project"
+            />
+            <Field
+              label="Tech Stack (comma-separated)"
+              value={projectForm.techStack}
+              onChange={(e) =>
+                setProjectForm({ ...projectForm, techStack: e.target.value })
+              }
+              placeholder="e.g., React, Node.js, MongoDB"
+            />
+            <Field
+              label="Project URL"
+              type="url"
+              value={projectForm.projectUrl}
+              onChange={(e) =>
+                setProjectForm({ ...projectForm, projectUrl: e.target.value })
+              }
+              placeholder="https://github.com/..."
+            />
+            <div className="flex gap-3">
+              <GradientButton onClick={addProject} className="flex-1">
+                Add Project
+              </GradientButton>
+              <GhostButton
+                onClick={() => setShowProjectForm(false)}
+                className="flex-1"
+              >
+                Cancel
+              </GhostButton>
+            </div>
+          </div>
+        </GlassCard>
+      )}
+
+      {showResumeModal && resumeUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur"
+          onClick={() => setShowResumeModal(false)}
+        >
+          <GlassCard
+            hover={false}
+            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden p-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 p-6">
+              <h3 className="text-xl font-black text-white">Resume Preview</h3>
+              <button
+                onClick={() => setShowResumeModal(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div
+              className="overflow-y-auto"
+              style={{ maxHeight: "calc(90vh - 80px)" }}
+            >
+              <iframe
+                src={resumeUrl}
+                className="h-[600px] w-full border-0"
+                title="Resume Preview"
+              />
+            </div>
+          </GlassCard>
+        </div>
+      )}
     </Page>
   );
 }

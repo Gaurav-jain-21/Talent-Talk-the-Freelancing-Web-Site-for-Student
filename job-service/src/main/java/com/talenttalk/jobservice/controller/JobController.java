@@ -40,6 +40,20 @@ public class JobController {
         return ResponseEntity.ok("Job deleted successfully");
     }
 
+    @DeleteMapping("/company/{companyId}/delete")
+    public ResponseEntity<String> deleteJobsByCompany(
+            @PathVariable Long companyId) {
+        jobService.deleteJobsByCompany(companyId);
+        return ResponseEntity.ok("Company jobs deleted successfully");
+    }
+
+    @DeleteMapping("/student/{studentId}/applications")
+    public ResponseEntity<String> deleteApplicationsByStudent(
+            @PathVariable Long studentId) {
+        jobService.deleteApplicationsByStudent(studentId);
+        return ResponseEntity.ok("Student applications deleted successfully");
+    }
+
     @GetMapping("/{jobId}")
     public ResponseEntity<Job> getJobById(
             @PathVariable Long jobId) {
@@ -84,6 +98,29 @@ public class JobController {
         return ResponseEntity.ok(jobService.updateApplicationStatus(applicationId, status));
     }
 
+    @PatchMapping("/application/{applicationId}/work-status")
+    public ResponseEntity<Application> updateWorkStatus(
+            @PathVariable Long applicationId,
+            @RequestParam String workStatus) {
+        return ResponseEntity.ok(
+                jobService.updateWorkStatus(applicationId, workStatus));
+    }
+
+    @PostMapping("/application/{applicationId}/work-status")
+    public ResponseEntity<Application> updateWorkStatusPost(
+            @PathVariable Long applicationId,
+            @RequestParam String workStatus) {
+        return ResponseEntity.ok(
+                jobService.updateWorkStatus(applicationId, workStatus));
+    }
+
+    @PostMapping("/application/{applicationId}/work-status/{workStatus}")
+    public ResponseEntity<Application> updateWorkStatusPath(
+            @PathVariable Long applicationId,
+            @PathVariable String workStatus) {
+        return ResponseEntity.ok(
+                jobService.updateWorkStatus(applicationId, workStatus));
+    }
 
     @PostMapping("/application/{applicationId}/withdraw")
     public ResponseEntity<Application> withdraw(

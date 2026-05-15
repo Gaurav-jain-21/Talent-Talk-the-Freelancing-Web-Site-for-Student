@@ -11,6 +11,7 @@ import com.talenttalk.jobservice.repository.ApplicationRepository;
 import com.talenttalk.jobservice.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -91,11 +92,25 @@ public class JobService {
     }
 
     // Delete job
+    @Transactional
     public void deleteJob(Long jobId) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException(
                         "Job not found"));
+        applicationRepository.deleteAllByJobId(jobId);
         jobRepository.delete(job);
+    }
+
+    @Transactional
+    public void deleteJobsByCompany(Long companyId) {
+        List<Job> jobs = jobRepository.findJobByCompanyId(companyId);
+        jobs.forEach(job -> applicationRepository.deleteAllByJobId(job.getId()));
+        jobRepository.deleteAllByCompanyId(companyId);
+    }
+
+    @Transactional
+    public void deleteApplicationsByStudent(Long studentId) {
+        applicationRepository.deleteAllByStudentId(studentId);
     }
 
     // Apply to job
@@ -117,6 +132,7 @@ public class JobService {
         application.setStudentName(request.getStudentName());
         application.setStudentEmail(request.getStudentEmail());
         application.setStatus(ApplicationStatus.PENDING);
+        application.setWorkStatus("NOT_STARTED");
         application.setAppliedAt(java.time.LocalDateTime.now());
 
         return applicationRepository.save(application);
@@ -145,6 +161,20 @@ public class JobService {
 
         application.setStatus(status);
         application.setUpdatedAt(java.time.LocalDateTime.now());
+
+        if (status == ApplicationStatus.SELECTED) {
+            Job job = jobRepository
+                    .findById(application.getJobId())
+                    .orElse(null);
+            application.setProjectTitle(
+                    job != null ? job.getTitle() : "Assigned project");
+            if (application.getWorkStatus() == null
+                    || application.getWorkStatus().isBlank()
+                    || application.getWorkStatus().equals("NOT_STARTED")) {
+                application.setWorkStatus("IN_PROGRESS");
+            }
+        }
+
         Application saved = applicationRepository.save(application);
 
         // Publish Kafka event only for SELECTED or REJECTED
@@ -170,6 +200,18 @@ public class JobService {
         }
 
         return saved;
+    }
+
+    public Application updateWorkStatus(
+            Long applicationId, String workStatus) {
+        Application application = applicationRepository
+                .findById(applicationId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Application not found"));
+
+        application.setWorkStatus(workStatus);
+        application.setUpdatedAt(java.time.LocalDateTime.now());
+        return applicationRepository.save(application);
     }
 
     // Withdraw application

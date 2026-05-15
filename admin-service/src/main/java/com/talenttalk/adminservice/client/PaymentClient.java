@@ -10,4 +10,7 @@ public interface PaymentClient {
 
     @GetMapping("/payment/company/{companyId}")
     List<Object> getPaymentsByCompany(@PathVariable Long companyId);
+
+    @GetMapping("/payment/all")
+    List<Object> getAllPayments();
 }

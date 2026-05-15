@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ArrowLeft, CalendarClock, ExternalLink, FileText } from "lucide-react";
@@ -5,6 +6,7 @@ import { companyApi, interviewApi, studentApi } from "../../api/services";
 import {
   Badge,
   EmptyState,
+  Field,
   GhostButton,
   GlassCard,
   GradientButton,
@@ -12,7 +14,7 @@ import {
   StatusBadge,
 } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { loadCompanyApplicationGroups, flattenCompanyApplications } from "../../utils/companyApplications";
 import { asArray, errorMessage, formatDate, initials, pick } from "../../utils/format";
 import { useAsync } from "../../utils/useAsync";
@@ -20,6 +22,7 @@ import { useAsync } from "../../utils/useAsync";
 export default function ApplicationDetail() {
   const { user } = useAuth();
   const { applicationId } = useParams();
+  const [deadline, setDeadline] = useState("");
   const applicationsQuery = useAsync(() => loadCompanyApplicationGroups(user.userId), [user.userId]);
   const match = flattenCompanyApplications(applicationsQuery.data || []).find(
     (item) => String(item.applicationId) === String(applicationId),
@@ -51,12 +54,21 @@ export default function ApplicationDetail() {
   }
 
   async function createInterview() {
+    if (!deadline) {
+      toast.error("Please choose an interview deadline first.");
+      return;
+    }
+    if (!studentId || !match?.jobId || !user.userId) {
+      toast.error("Application details are still loading. Please try again.");
+      return;
+    }
     try {
       await interviewApi.create({
         applicationId,
         studentId,
         jobId: match?.jobId,
         companyId: user.userId,
+        deadline,
       });
       toast.success("Interview created");
     } catch (error) {
@@ -175,6 +187,12 @@ export default function ApplicationDetail() {
             Review the profile and resume, then move this application forward.
           </p>
           <div className="mt-6 space-y-3">
+            <Field
+              label="Interview deadline"
+              type="datetime-local"
+              value={deadline}
+              onChange={(event) => setDeadline(event.target.value)}
+            />
             <GradientButton className="w-full" onClick={() => setStatus("SELECTED")}>
               Accept
             </GradientButton>

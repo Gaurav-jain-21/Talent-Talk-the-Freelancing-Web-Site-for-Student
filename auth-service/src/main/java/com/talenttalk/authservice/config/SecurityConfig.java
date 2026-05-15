@@ -43,6 +43,8 @@ public class SecurityConfig {
                                 "/auth/login",
                                 "/auth/verify",
                                 "/auth/resend-verification",
+                                "/auth/forgot-password",
+                                "/auth/reset-password",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/swagger-ui.html",
@@ -53,7 +55,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo

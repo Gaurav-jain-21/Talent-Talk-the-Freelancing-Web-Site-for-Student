@@ -1,4 +1,4 @@
-export const AUTH_KEYS = ["token", "role", "userId", "name", "email"];
+export const AUTH_KEYS = ["token", "role", "userId", "name", "email", "imageUrl"];
 
 export function getStoredUser() {
   const token = localStorage.getItem("token");
@@ -6,9 +6,10 @@ export function getStoredUser() {
   const userId = localStorage.getItem("userId");
   const name = localStorage.getItem("name");
   const email = localStorage.getItem("email");
+  const imageUrl = localStorage.getItem("imageUrl");
 
   if (!token || !role || !userId) return null;
-  return { token, role, userId, name: name || "Talent", email: email || "" };
+  return { token, role, userId, name: name || "Talent", email: email || "", imageUrl: imageUrl || "" };
 }
 
 export function persistAuth(payload) {
@@ -18,6 +19,7 @@ export function persistAuth(payload) {
     userId: payload?.userId,
     name: payload?.name,
     email: payload?.email,
+    imageUrl: payload?.imageUrl,
   };
 
   Object.entries(auth).forEach(([key, value]) => {

@@ -17,6 +17,12 @@ public interface JobClient {
     @DeleteMapping("/job/{jobId}/delete")
     void deleteJob(@PathVariable Long jobId);
 
+    @DeleteMapping("/job/company/{companyId}/delete")
+    void deleteJobsByCompany(@PathVariable Long companyId);
+
+    @DeleteMapping("/job/student/{studentId}/applications")
+    void deleteApplicationsByStudent(@PathVariable Long studentId);
+
     @PostMapping("/job/{jobId}/close")
     Object closeJob(@PathVariable Long jobId);
 }

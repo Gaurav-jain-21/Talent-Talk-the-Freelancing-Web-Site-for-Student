@@ -52,6 +52,12 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getAllProfiles());
     }
 
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<String> deleteStudent(@PathVariable Long userId) {
+        studentService.deleteProfile(userId);
+        return ResponseEntity.ok("Student deleted successfully");
+    }
+
 
     @PostMapping("/profile/{studentId}/project")
     public ResponseEntity<Project> addProject(
@@ -72,6 +78,24 @@ public class StudentController {
             @PathVariable Long studentId) {
         return ResponseEntity.ok(
                 studentService.getMyApplications(studentId));
+    }
+
+    @PatchMapping("/application/{applicationId}/work-status")
+    public ResponseEntity<Object> updateApplicationWorkStatus(
+            @PathVariable Long applicationId,
+            @RequestParam String workStatus) {
+        return ResponseEntity.ok(
+                studentService.updateApplicationWorkStatus(
+                        applicationId, workStatus));
+    }
+
+    @PostMapping("/application/{applicationId}/work-status")
+    public ResponseEntity<Object> updateApplicationWorkStatusPost(
+            @PathVariable Long applicationId,
+            @RequestParam String workStatus) {
+        return ResponseEntity.ok(
+                studentService.updateApplicationWorkStatus(
+                        applicationId, workStatus));
     }
 
     @GetMapping("/jobs")

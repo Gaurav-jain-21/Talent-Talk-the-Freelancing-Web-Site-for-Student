@@ -23,6 +23,8 @@ public class Application {
     private String studentEmail;
     @Enumerated(EnumType.STRING)
     private  ApplicationStatus status;
+    private String projectTitle;
+    private String workStatus;
     private LocalDateTime appliedAt;
     private LocalDateTime updatedAt;
 

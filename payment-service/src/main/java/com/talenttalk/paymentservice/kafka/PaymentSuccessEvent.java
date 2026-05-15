@@ -12,6 +12,7 @@ public class PaymentSuccessEvent {
     private Long companyId;
     private Long jobId;
     private Long studentId;
+    private Long applicationId;
     private Double amount;
     private String razorpayPaymentId;
 }

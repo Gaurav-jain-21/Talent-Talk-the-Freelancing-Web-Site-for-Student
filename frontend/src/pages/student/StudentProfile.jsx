@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { studentApi } from "../../api/services";
 import { Badge, EmptyState, Field, GhostButton, GlassCard, GradientButton, Skeleton, TextArea } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { asArray, errorMessage, initials, pick } from "../../utils/format";
 import { useAsync } from "../../utils/useAsync";
 

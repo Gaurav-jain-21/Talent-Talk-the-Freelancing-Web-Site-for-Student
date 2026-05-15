@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/payment")
@@ -24,9 +25,14 @@ public class PaymentController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<String> verifyPayment(
+    public ResponseEntity<Payment> verifyPayment(
             @RequestBody PaymentVerifyRequest request) throws Exception {
         return ResponseEntity.ok(paymentService.verifyPayment(request));
+    }
+
+    @GetMapping("/key")
+    public ResponseEntity<Map<String, String>> getRazorpayKey() {
+        return ResponseEntity.ok(Map.of("key", paymentService.getRazorpayKeyId()));
     }
 
     @GetMapping("/company/{companyId}")
@@ -35,13 +41,18 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.getPaymentsByCompany(companyId));
     }
 
+    @GetMapping({"", "/", "/all", "/admin/all", "/transactions"})
+    public ResponseEntity<List<Payment>> getAllPayments() {
+        return ResponseEntity.ok(paymentService.getAllPayments());
+    }
+
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<Payment>> getByStudent(
             @PathVariable Long studentId) {
         return ResponseEntity.ok(paymentService.getPaymentsByStudent(studentId));
     }
 
-    @GetMapping("/{paymentId}")
+    @GetMapping("/{paymentId:\\d+}")
     public ResponseEntity<Payment> getById(
             @PathVariable Long paymentId) {
         return ResponseEntity.ok(paymentService.getPaymentById(paymentId));

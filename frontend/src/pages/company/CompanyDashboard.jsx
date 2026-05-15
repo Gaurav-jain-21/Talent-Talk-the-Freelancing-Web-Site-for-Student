@@ -4,7 +4,7 @@ import { companyApi, interviewApi } from "../../api/services";
 import JobCard from "../../components/JobCard";
 import { EmptyState, GlassCard, GradientButton, ScoreRing, SkeletonGrid, StatCard } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { asArray, pick } from "../../utils/format";
 import { useAsync } from "../../utils/useAsync";
 
@@ -87,4 +87,3 @@ export default function CompanyDashboard() {
     </Page>
   );
 }
-

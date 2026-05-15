@@ -27,6 +27,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/auth/login",
             "/auth/verify",
             "/auth/resend-verification",
+            "/auth/forgot-password",
+            "/auth/reset-password",
             "/oauth2/**",
             "/login/oauth2/**",
             "/auth/oauth2/user",
@@ -94,7 +96,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private boolean isOpenRoute(String path) {
         return OPEN_ROUTES.stream()
-                .anyMatch(path::startsWith);
+                .anyMatch(route -> {
+                    if (route.endsWith("/**")) {
+                        return path.startsWith(route.substring(0, route.length() - 3));
+                    }
+                    return path.startsWith(route);
+                });
     }
 
     private SecretKey getSigningKey() {

@@ -13,6 +13,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class OllamaService {
 
+    private static final int TOTAL_QUESTIONS = 10;
+
     @Value("${ollama.api.url}")
     private String ollamaUrl;
 
@@ -51,7 +53,7 @@ public class OllamaService {
         throw new RuntimeException("Empty response from Ollama");
     }
 
-    // Generate 7 questions + expected answers in ONE call
+    // Generate 10 questions + expected answers in ONE call
     public List<Map<String, String>> generateQuestionsWithAnswers(
             String jobTitle,
             String jobDescription,
@@ -73,7 +75,7 @@ public class OllamaService {
                 Bio: %s
                 Projects: %s
                 
-                Generate exactly 7 interview questions with ideal answers.
+                Generate exactly 10 interview questions with ideal answers.
                 Mix technical and behavioral questions.
                 Make them relevant to both the job and candidate background.
                 Progressive difficulty from easy to hard.
@@ -93,6 +95,12 @@ public class OllamaService {
                 A6: <ideal answer here>
                 Q7: <question here>
                 A7: <ideal answer here>
+                Q8: <question here>
+                A8: <ideal answer here>
+                Q9: <question here>
+                A9: <ideal answer here>
+                Q10: <question here>
+                A10: <ideal answer here>
                 """.formatted(
                 jobTitle, jobDescription, skillsRequired,
                 studentSkills, studentBio, studentProjects
@@ -100,6 +108,51 @@ public class OllamaService {
 
         String response = callOllama(prompt);
         return parseQuestionsAndAnswers(response);
+    }
+
+    public List<Map<String, String>> fallbackQuestionsWithAnswers(
+            String jobTitle,
+            String skillsRequired) {
+
+        String title = blank(jobTitle) ? "this role" : jobTitle;
+        String skills = blank(skillsRequired)
+                ? "the required skills" : skillsRequired;
+
+        List<Map<String, String>> questions = new ArrayList<>();
+        questions.add(question(
+                "Tell us about yourself and why you are interested in "
+                        + title + ".",
+                "Candidate should connect their background, motivation, and role fit."));
+        questions.add(question(
+                "Which skills from your profile are most relevant to "
+                        + title + "?",
+                "Candidate should explain relevant skills with practical examples."));
+        questions.add(question(
+                "Describe a project where you used " + skills + ".",
+                "Candidate should describe the project, their contribution, and outcomes."));
+        questions.add(question(
+                "How do you approach debugging when something is not working?",
+                "Candidate should describe a structured debugging process."));
+        questions.add(question(
+                "How do you manage deadlines and communicate progress?",
+                "Candidate should show ownership, planning, and clear communication."));
+        questions.add(question(
+                "Explain one technical concept you know well in simple terms.",
+                "Candidate should communicate clearly and accurately."));
+        questions.add(question(
+                "Why should the company select you for this opportunity?",
+                "Candidate should summarize strengths, readiness, and fit."));
+        questions.add(question(
+                "Describe how you would learn a new tool or framework required for this role.",
+                "Candidate should show learning ability and practical follow-through."));
+        questions.add(question(
+                "Tell us about a time you received feedback and improved your work.",
+                "Candidate should show coachability and growth mindset."));
+        questions.add(question(
+                "What would you do in your first week if selected for "
+                        + title + "?",
+                "Candidate should show planning, curiosity, and initiative."));
+        return questions;
     }
 
     // Evaluate all answers + generate summary in ONE call
@@ -147,6 +200,12 @@ public class OllamaService {
                 FEEDBACK6: <one sentence>
                 SCORE7: <0-10>
                 FEEDBACK7: <one sentence>
+                SCORE8: <0-10>
+                FEEDBACK8: <one sentence>
+                SCORE9: <0-10>
+                FEEDBACK9: <one sentence>
+                SCORE10: <0-10>
+                FEEDBACK10: <one sentence>
                 SUMMARY: <2-3 sentence overall summary>
                 STRONG: <strong areas>
                 WEAK: <weak areas>
@@ -155,6 +214,24 @@ public class OllamaService {
 
         String response = callOllama(prompt);
         return parseEvaluation(response);
+    }
+
+    public Map<String, Object> fallbackEvaluation(int answerCount) {
+        int count = Math.max(1, answerCount);
+        List<Integer> scores = new ArrayList<>();
+        List<String> feedbacks = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            scores.add(6);
+            feedbacks.add("Answer submitted successfully; manual review is recommended.");
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("scores", scores);
+        result.put("feedbacks", feedbacks);
+        result.put("summary",
+                "The interview was completed and saved. AI evaluation was unavailable, so the company should review the answers manually.");
+        result.put("recommendation", "PENDING_REVIEW");
+        return result;
     }
 
     // Parse Q1/A1 format
@@ -189,8 +266,8 @@ public class OllamaService {
             }
         }
 
-        // Ensure we always have 7 questions
-        while (result.size() < 7) {
+        // Ensure we always have 10 questions
+        while (result.size() < TOTAL_QUESTIONS) {
             Map<String, String> qa = new HashMap<>();
             qa.put("question",
                     "Describe your experience with relevant technologies");
@@ -248,8 +325,8 @@ public class OllamaService {
         }
 
         // Fill defaults if parsing missed anything
-        while (scores.size() < 7) scores.add(5);
-        while (feedbacks.size() < 7) feedbacks.add("Answer noted.");
+        while (scores.size() < TOTAL_QUESTIONS) scores.add(5);
+        while (feedbacks.size() < TOTAL_QUESTIONS) feedbacks.add("Answer noted.");
 
         Map<String, Object> result = new HashMap<>();
         result.put("scores", scores);
@@ -270,5 +347,16 @@ public class OllamaService {
         if (score >= 60) return "B";
         if (score >= 50) return "C";
         return "F";
+    }
+
+    private Map<String, String> question(String question, String expectedAnswer) {
+        Map<String, String> qa = new HashMap<>();
+        qa.put("question", question);
+        qa.put("expectedAnswer", expectedAnswer);
+        return qa;
+    }
+
+    private boolean blank(String value) {
+        return value == null || value.isBlank();
     }
 }

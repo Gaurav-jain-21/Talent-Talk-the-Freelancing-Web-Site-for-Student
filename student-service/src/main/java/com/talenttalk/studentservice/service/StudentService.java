@@ -12,6 +12,7 @@ import com.talenttalk.studentservice.repository.ProjectRepository;
 import com.talenttalk.studentservice.repository.StudentProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -102,6 +103,14 @@ public class StudentService {
         return studentProfileRepository.findAll();
     }
 
+    @Transactional
+    public void deleteProfile(Long userId) {
+        StudentProfile profile = studentProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
+        projectRepository.deleteByStudentId(profile.getId());
+        studentProfileRepository.delete(profile);
+    }
+
     public Project addProject(Long studentId, ProjectRequest request) {
         studentProfileRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
@@ -129,6 +138,17 @@ public class StudentService {
 
     public List<Object> browseJobs() {
         return jobClient.getAllJobs();
+    }
+
+    public Object updateApplicationWorkStatus(
+            Long applicationId, String workStatus) {
+        try {
+            return jobClient.updateApplicationWorkStatus(
+                    applicationId, workStatus);
+        } catch (Exception ignored) {
+            return jobClient.updateApplicationWorkStatusPost(
+                    applicationId, workStatus);
+        }
     }
 
 }

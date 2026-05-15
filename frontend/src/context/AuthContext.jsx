@@ -1,12 +1,10 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { authApi } from "../api/services";
 import { clearAuth, getStoredUser, persistAuth } from "../utils/storage";
 import { routeForRole } from "../utils/format";
-
-const AuthContext = createContext(null);
+import { AuthContext } from "./authContextValue";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => getStoredUser());
@@ -34,10 +32,19 @@ export function AuthProvider({ children }) {
         toast.success("Welcome back to Talent Talk");
         navigate(routeForRole(nextUser?.role), { replace: true });
       },
-      applyOAuth(payload) {
+      async applyOAuth(payload) {
+        const validated = await authApi.validate(payload?.token);
         const nextUser = persistAuth(payload);
-        setUser(nextUser);
-        navigate(routeForRole(nextUser?.role), { replace: true });
+        const normalizedUser = {
+          ...nextUser,
+          role: validated?.role || nextUser?.role,
+          userId: validated?.userId || nextUser?.userId,
+          email: validated?.email || nextUser?.email,
+        };
+        persistAuth(normalizedUser);
+        setUser(normalizedUser);
+        toast.success("Signed in with Google");
+        navigate(routeForRole(normalizedUser?.role), { replace: true });
       },
       logout() {
         clearAuth();
@@ -52,10 +59,4 @@ export function AuthProvider({ children }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const value = useContext(AuthContext);
-  if (!value) throw new Error("useAuth must be used inside AuthProvider");
-  return value;
 }

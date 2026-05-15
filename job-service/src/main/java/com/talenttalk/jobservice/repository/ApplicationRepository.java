@@ -10,4 +10,6 @@ import java.util.List;
 public interface ApplicationRepository extends JpaRepository<Application,Long> {
     List<Application> findAllByJobId(Long jobId);
     List<Application> findAllByStudentId(Long studentId);
+    void deleteAllByJobId(Long jobId);
+    void deleteAllByStudentId(Long studentId);
 }

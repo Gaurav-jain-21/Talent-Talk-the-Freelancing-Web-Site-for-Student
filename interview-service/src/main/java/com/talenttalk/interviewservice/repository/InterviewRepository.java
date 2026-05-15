@@ -12,4 +12,6 @@ public interface InterviewRepository
     List<Interview> findByJobId(Long jobId);
     List<Interview> findByStudentIdAndStatus(
             Long studentId, InterviewStatus status);
+    List<Interview> findByStudentIdAndStatusIn(
+            Long studentId, List<InterviewStatus> statuses);
 }

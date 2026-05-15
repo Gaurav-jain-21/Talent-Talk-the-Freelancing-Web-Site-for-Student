@@ -41,6 +41,12 @@ public class CompanyController {
     public ResponseEntity<List<CompanyProfile>> getAllCompanies() {
         return ResponseEntity.ok(companyService.getAllCompanies());
     }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<String> deleteCompany(@PathVariable Long userId) {
+        companyService.deleteProfile(userId);
+        return ResponseEntity.ok("Company deleted successfully");
+    }
     @GetMapping("/students")
     public ResponseEntity<List<Object>> getAllStudents() {
         return ResponseEntity.ok(companyService.getAllStudents());
@@ -74,6 +80,22 @@ public class CompanyController {
             @RequestParam String status) {
         return ResponseEntity.ok(
                 companyService.updateApplicationStatus(applicationId, status));
+    }
+
+    @PatchMapping("/application/{applicationId}/work-status")
+    public ResponseEntity<Object> updateWorkStatus(
+            @PathVariable Long applicationId,
+            @RequestParam String workStatus) {
+        return ResponseEntity.ok(
+                companyService.updateWorkStatus(applicationId, workStatus));
+    }
+
+    @PostMapping("/application/{applicationId}/work-status")
+    public ResponseEntity<Object> updateWorkStatusPost(
+            @PathVariable Long applicationId,
+            @RequestParam String workStatus) {
+        return ResponseEntity.ok(
+                companyService.updateWorkStatus(applicationId, workStatus));
     }
 
     @PostMapping("/email/send")

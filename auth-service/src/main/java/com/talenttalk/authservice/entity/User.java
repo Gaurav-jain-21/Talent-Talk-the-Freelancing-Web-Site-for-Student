@@ -2,6 +2,7 @@ package com.talenttalk.authservice.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -27,6 +28,8 @@ public class User {
     private boolean isVerified = false;
 
     private String verificationToken;
+    private String passwordResetOtp;
+    private LocalDateTime passwordResetOtpExpiresAt;
     private String provider;
     private String providerId;
     private String imageUrl;

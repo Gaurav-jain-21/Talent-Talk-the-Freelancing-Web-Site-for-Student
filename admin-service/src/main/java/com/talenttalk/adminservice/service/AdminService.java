@@ -5,14 +5,18 @@ import com.talenttalk.adminservice.client.JobClient;
 import com.talenttalk.adminservice.client.PaymentClient;
 import com.talenttalk.adminservice.client.StudentClient;
 import com.talenttalk.adminservice.dto.DashboardStats;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminService {
     @Autowired
     private StudentClient studentClient;
@@ -43,7 +47,21 @@ public class AdminService {
     }
 
     public List<Object> getAllPayments(Long companyId) {
-        return paymentClient.getPaymentsByCompany(companyId);
+        try {
+            return paymentClient.getPaymentsByCompany(companyId);
+        } catch (FeignException e) {
+            log.warn("Payment service failed while loading payments for company {}: {}", companyId, e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Object> getAllPayments() {
+        try {
+            return paymentClient.getAllPayments();
+        } catch (FeignException e) {
+            log.warn("Payment service failed while loading all payments: {}", e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public DashboardStats getDashboardStats(){
@@ -74,6 +92,18 @@ public class AdminService {
     public String deleteJob(Long jobId) {
         jobClient.deleteJob(jobId);
         return "Job deleted successfully";
+    }
+
+    public String deleteStudent(Long userId) {
+        jobClient.deleteApplicationsByStudent(userId);
+        studentClient.deleteStudent(userId);
+        return "Student deleted successfully";
+    }
+
+    public String deleteCompany(Long userId) {
+        jobClient.deleteJobsByCompany(userId);
+        companyClient.deleteCompany(userId);
+        return "Company deleted successfully";
     }
 
     public Object closeJob(Long jobId) {

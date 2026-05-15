@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { Award, ChevronDown, Search } from "lucide-react";
 import { interviewApi } from "../../api/services";
-import { Badge, EmptyState, GlassCard, ScoreRing } from "../../components/ui/Primitives";
+import { Badge, EmptyState, GlassCard, ScoreRing, StatusBadge } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { asArray, pick } from "../../utils/format";
 import { useAsync } from "../../utils/useAsync";
 
@@ -23,10 +23,15 @@ export default function InterviewResults() {
   const result = resultQuery.data || filtered.find((item) => String(pick(item, ["id", "interviewId"])) === String(activeId)) || {};
   const interview = result.interview || result;
   const questions = asArray(pick(result, ["questions"], []));
+  const status = String(pick(interview, ["status"], "PENDING")).toUpperCase();
   const recommendation = String(pick(interview, ["recommendation"], "")).toUpperCase();
+  const completed = status === "COMPLETED";
+  const pendingReview = completed && recommendation.includes("PENDING");
   const recommended =
-    (recommendation.includes("RECOMMENDED") && !recommendation.includes("NOT")) ||
-    Number(pick(interview, ["score", "totalScore"], 0)) >= 70;
+    completed &&
+    !pendingReview &&
+    ((recommendation.includes("RECOMMENDED") && !recommendation.includes("NOT")) ||
+      Number(pick(interview, ["score", "totalScore"], 0)) >= 70);
 
   return (
     <Page className="grid min-h-[calc(100vh-9rem)] gap-5 xl:grid-cols-[24rem_1fr]">
@@ -51,8 +56,14 @@ export default function InterviewResults() {
 
       {activeId ? (
         <GlassCard hover={false} className="p-6">
-          <div className={`mb-6 rounded-3xl border p-5 ${recommended ? "border-emerald-400/25 bg-emerald-400/10" : "border-rose-400/25 bg-rose-400/10"}`}>
-            <Badge tone={recommended ? "green" : "red"}>{recommended ? "Recommended" : "Not Recommended"}</Badge>
+          <div className={`mb-6 rounded-3xl border p-5 ${completed && !pendingReview ? (recommended ? "border-emerald-400/25 bg-emerald-400/10" : "border-rose-400/25 bg-rose-400/10") : "border-amber-400/25 bg-amber-400/10"}`}>
+            {pendingReview ? (
+              <Badge tone="yellow">Pending Review</Badge>
+            ) : completed ? (
+              <Badge tone={recommended ? "green" : "red"}>{recommended ? "Recommended" : "Not Recommended"}</Badge>
+            ) : (
+              <StatusBadge status={status} />
+            )}
             <h3 className="mt-3 text-3xl font-black text-white">{pick(interview, ["studentName", "name"], "Student")}</h3>
           </div>
           <div className="grid gap-6 md:grid-cols-[auto_1fr]">
@@ -69,7 +80,12 @@ export default function InterviewResults() {
                   Q{index + 1}. {pick(item, ["question"], "Question")}
                   <ChevronDown className="h-4 w-4" />
                 </summary>
-                <p className="mt-3 text-sm text-slate-400">{pick(item, ["answer", "response"], "")}</p>
+                <p className="mt-3 text-sm text-slate-400">{pick(item, ["studentAnswer", "answer", "response"], "Not answered yet.")}</p>
+                {pick(item, ["feedback"], "") && (
+                  <p className="mt-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-sm text-slate-300">
+                    {pick(item, ["feedback"], "")}
+                  </p>
+                )}
               </details>
             ))}
           </div>

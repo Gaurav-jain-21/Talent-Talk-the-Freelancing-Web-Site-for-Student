@@ -1,21 +1,38 @@
 import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useAuth } from "../../context/useAuth";
 import { GlassCard } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
+import { errorMessage } from "../../utils/format";
 
 export default function OAuthCallback() {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const { applyOAuth } = useAuth();
 
   useEffect(() => {
+    const token = params.get("token");
+    const error = params.get("error");
+
+    if (error || !token) {
+      toast.error(params.get("message") || "Google sign-in failed");
+      navigate("/login", { replace: true });
+      return;
+    }
+
     applyOAuth({
-      token: params.get("token"),
+      token,
       role: params.get("role"),
       userId: params.get("userId"),
       name: params.get("name"),
+      email: params.get("email"),
+      imageUrl: params.get("imageUrl"),
+    }).catch((authError) => {
+      toast.error(errorMessage(authError));
+      navigate("/login", { replace: true });
     });
-  }, [applyOAuth, params]);
+  }, [applyOAuth, navigate, params]);
 
   return (
     <Page>
@@ -26,4 +43,3 @@ export default function OAuthCallback() {
     </Page>
   );
 }
-

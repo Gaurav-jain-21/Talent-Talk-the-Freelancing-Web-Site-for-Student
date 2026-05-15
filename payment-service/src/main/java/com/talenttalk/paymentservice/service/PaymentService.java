@@ -30,6 +30,13 @@ public class PaymentService {
     @Value("${razorpay.key.secret}")
     private String keySecret;
 
+    @Value("${razorpay.key.id}")
+    private String keyId;
+
+    public String getRazorpayKeyId() {
+        return keyId;
+    }
+
     public Payment createOrder(PaymentRequest request) throws RazorpayException {
 
         int amountInPaise = (int) (request.getAmount() * 100);
@@ -46,6 +53,10 @@ public class PaymentService {
         payment.setCompanyId(request.getCompanyId());
         payment.setJobId(request.getJobId());
         payment.setStudentId(request.getStudentId());
+        payment.setApplicationId(request.getApplicationId());
+        payment.setCompanyName(request.getCompanyName());
+        payment.setStudentName(request.getStudentName());
+        payment.setJobTitle(request.getJobTitle());
         payment.setAmount(request.getAmount());
         payment.setCurrency("INR");
         payment.setRazorpayOrderId(razorpayOrderId);
@@ -56,7 +67,7 @@ public class PaymentService {
 
     private final PaymentSuccessProducer paymentSuccessProducer;
 
-    public String verifyPayment(PaymentVerifyRequest request)
+    public Payment verifyPayment(PaymentVerifyRequest request)
             throws Exception {
 
         String data = request.getRazorpayOrderId()
@@ -85,16 +96,16 @@ public class PaymentService {
                     payment.getCompanyId(),
                     payment.getJobId(),
                     payment.getStudentId(),
+                    payment.getApplicationId(),
                     payment.getAmount(),
                     request.getRazorpayPaymentId()
             );
             paymentSuccessProducer.publishPaymentSuccess(event);
 
-            return "Payment verified successfully";
+            return payment;
         } else {
             payment.setStatus(PaymentStatus.FAILED);
-            paymentRepository.save(payment);
-            return "Payment verification failed";
+            return paymentRepository.save(payment);
         }
     }
 
@@ -106,6 +117,10 @@ public class PaymentService {
 
     public List<Payment> getPaymentsByStudent(Long studentId) {
         return paymentRepository.findByStudentId(studentId);
+    }
+
+    public List<Payment> getAllPayments() {
+        return paymentRepository.findAll();
     }
 
     public Payment getPaymentById(Long paymentId) {

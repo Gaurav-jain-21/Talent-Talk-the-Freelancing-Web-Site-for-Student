@@ -9,7 +9,7 @@ import {
 } from "../../components/ui/Primitives";
 import ApplicantCard from "../../components/ApplicantCard";
 import { Page } from "../../components/ui/Motion";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import {
   asArray,
   errorMessage,
@@ -38,6 +38,14 @@ export default function JobApplicants() {
   }
 
   async function createInterview(applicant) {
+    if (!deadline) {
+      toast.error("Please choose an interview deadline first.");
+      return;
+    }
+    if (!pick(applicant, ["studentId", "userId"]) || !jobId || !user.userId) {
+      toast.error("Applicant details are still loading. Please try again.");
+      return;
+    }
     try {
       await interviewApi.create({
         applicationId: pick(applicant, ["applicationId", "id"]),

@@ -62,4 +62,32 @@ public class EmailVerificationService {
 
         mailSender.send(message);
     }
+
+    public void sendPasswordResetOtp(String toEmail,
+                                     String name,
+                                     String otp) throws MessagingException {
+
+        String body = """
+                <html>
+                <body>
+                    <h2>Password reset request</h2>
+                    <p>Hello %s,</p>
+                    <p>Use this verification code to reset your Talent Talk password:</p>
+                    <h1 style="letter-spacing:6px;">%s</h1>
+                    <p>This code expires in 10 minutes. If you did not request this, ignore this email.</p>
+                    <p><strong>Talent Talk Team</strong></p>
+                </body>
+                </html>
+                """.formatted(name, otp);
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        helper.setFrom(fromEmail);
+        helper.setTo(toEmail);
+        helper.setSubject("Talent Talk password reset code");
+        helper.setText(body, true);
+
+        mailSender.send(message);
+    }
 }

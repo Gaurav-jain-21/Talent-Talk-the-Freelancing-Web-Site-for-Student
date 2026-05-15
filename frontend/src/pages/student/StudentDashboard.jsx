@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { jobApi, interviewApi } from "../../api/services";
 import { Badge, EmptyState, GlassCard, GhostButton, SkeletonGrid, StatCard, StatusBadge } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { asArray, formatDate, pick } from "../../utils/format";
 import { useAsync } from "../../utils/useAsync";
 

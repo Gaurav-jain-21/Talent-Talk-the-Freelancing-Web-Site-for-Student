@@ -9,4 +9,5 @@ import java.util.List;
 public interface JobRepository extends JpaRepository<Job,Long> {
 
     List<Job> findJobByCompanyId(Long companyId);
+    void deleteAllByCompanyId(Long companyId);
 }

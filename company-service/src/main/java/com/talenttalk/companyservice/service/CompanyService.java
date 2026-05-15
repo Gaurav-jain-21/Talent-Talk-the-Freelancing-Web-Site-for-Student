@@ -71,6 +71,12 @@ public class CompanyService {
         return companyProfileRepository.findAll();
     }
 
+    public void deleteProfile(Long userId) {
+        CompanyProfile profile = companyProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
+        companyProfileRepository.delete(profile);
+    }
+
     public List<Object> getAllStudents() {
         return studentClient.getAllStudents();
     }
@@ -90,6 +96,15 @@ public class CompanyService {
     public Object updateApplicationStatus(Long applicationId, String status) {
         return jobClient.updateApplicationStatus(applicationId, status);
     }
+
+    public Object updateWorkStatus(Long applicationId, String workStatus) {
+        try {
+            return jobClient.updateWorkStatus(applicationId, workStatus);
+        } catch (Exception ignored) {
+            return jobClient.updateWorkStatusPost(applicationId, workStatus);
+        }
+    }
+
     private final CommunicationClient communicationClient;
     public String sendStatusEmail(
             String toEmail,

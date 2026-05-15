@@ -52,6 +52,25 @@ export function formatTime(value) {
   }).format(date);
 }
 
+export function formatCurrency(value, currency = "INR") {
+  const amount = Number(value) || 0;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+export function moneyFromText(value) {
+  if (value === undefined || value === null) return 0;
+  const text = String(value).replace(/,/g, "");
+  const lakhMatch = text.match(/([\d.]+)\s*(lpa|lakh|lakhs)/i);
+  if (lakhMatch) return Math.round(Number(lakhMatch[1]) * 100000) || 0;
+  const numbers = text.match(/\d+(?:\.\d+)?/g);
+  if (!numbers?.length) return 0;
+  return Math.round(Number(numbers[numbers.length - 1])) || 0;
+}
+
 export function daysUntil(value) {
   if (!value) return null;
   const date = new Date(value);
@@ -80,9 +99,9 @@ export function routeForRole(role) {
 
 export function statusTone(status = "") {
   const normalized = String(status).toUpperCase();
-  if (["SELECTED", "RECOMMENDED", "ACTIVE", "APPROVED"].includes(normalized)) return "green";
+  if (["SELECTED", "RECOMMENDED", "ACTIVE", "APPROVED", "PAID", "SUCCESS"].includes(normalized)) return "green";
   if (["REJECTED", "CLOSED", "FAILED"].includes(normalized)) return "red";
-  if (["PENDING", "SCHEDULED"].includes(normalized)) return "yellow";
+  if (["PENDING", "SCHEDULED", "CREATED"].includes(normalized)) return "yellow";
   if (["WITHDRAWN"].includes(normalized)) return "slate";
   return "indigo";
 }

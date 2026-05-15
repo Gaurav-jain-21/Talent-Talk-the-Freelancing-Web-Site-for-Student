@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { Field, GhostButton, GlassCard, GradientButton } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
 import { errorMessage } from "../../utils/format";
@@ -24,6 +24,10 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function continueWithGoogle() {
+    window.location.assign(`${API_BASE_URL}/oauth2/authorization/google`);
   }
 
   return (
@@ -62,12 +66,15 @@ export default function Login() {
           <GradientButton type="submit" loading={loading} className="w-full">
             Sign In
           </GradientButton>
-          <a href={`${API_BASE_URL}/oauth2/authorization/google`} className="block">
-            <GhostButton className="w-full">
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-sm font-black text-slate-950">G</span>
-              Continue with Google
-            </GhostButton>
-          </a>
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-sm font-bold text-cyan-200 hover:text-white">
+              Forgot password?
+            </Link>
+          </div>
+          <GhostButton type="button" className="w-full" onClick={continueWithGoogle}>
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-sm font-black text-slate-950">G</span>
+            Continue with Google
+          </GhostButton>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-500">
@@ -77,4 +84,3 @@ export default function Login() {
     </Page>
   );
 }
-

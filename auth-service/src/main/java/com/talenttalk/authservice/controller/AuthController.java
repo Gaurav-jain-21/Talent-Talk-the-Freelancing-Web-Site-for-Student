@@ -1,8 +1,10 @@
 package com.talenttalk.authservice.controller;
 
 import com.talenttalk.authservice.dto.ChangePasswordRequest;
+import com.talenttalk.authservice.dto.ForgotPasswordRequest;
 import com.talenttalk.authservice.dto.LoginRequest;
 import com.talenttalk.authservice.dto.RegisterRequest;
+import com.talenttalk.authservice.dto.ResetPasswordRequest;
 import com.talenttalk.authservice.entity.User;
 import com.talenttalk.authservice.repository.UserRepository;
 import com.talenttalk.authservice.service.EmailVerificationService;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
@@ -31,6 +35,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final EmailVerificationService emailVerificationService;
+    private static final SecureRandom OTP_RANDOM = new SecureRandom();
 
     @PostMapping("/register")
     public ResponseEntity<String> register(
@@ -182,6 +187,70 @@ public class AuthController {
         userRepository.save(user);
 
         return ResponseEntity.ok("Password changed successfully");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request)
+            throws MessagingException {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body("This account uses Google login. Please continue with Google.");
+        }
+
+        String otp = String.valueOf(100000 + OTP_RANDOM.nextInt(900000));
+        user.setPasswordResetOtp(passwordEncoder.encode(otp));
+        user.setPasswordResetOtpExpiresAt(LocalDateTime.now().plusMinutes(10));
+        userRepository.save(user);
+
+        emailVerificationService.sendPasswordResetOtp(
+                user.getEmail(),
+                user.getName(),
+                otp
+        );
+
+        return ResponseEntity.ok("Password reset code sent to your email");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getPasswordResetOtp() == null
+                || user.getPasswordResetOtpExpiresAt() == null) {
+            return ResponseEntity.badRequest()
+                    .body("Please request a password reset code first");
+        }
+
+        if (LocalDateTime.now().isAfter(user.getPasswordResetOtpExpiresAt())) {
+            user.setPasswordResetOtp(null);
+            user.setPasswordResetOtpExpiresAt(null);
+            userRepository.save(user);
+            return ResponseEntity.badRequest()
+                    .body("Password reset code expired");
+        }
+
+        if (!passwordEncoder.matches(
+                request.getOtp(),
+                user.getPasswordResetOtp())) {
+            return ResponseEntity.badRequest()
+                    .body("Invalid verification code");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPasswordResetOtp(null);
+        user.setPasswordResetOtpExpiresAt(null);
+        user.setVerified(true);
+        userRepository.save(user);
+
+        return ResponseEntity.ok("Password reset successfully");
     }
 
     // Validate token endpoint

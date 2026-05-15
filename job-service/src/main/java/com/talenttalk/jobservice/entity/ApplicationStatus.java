@@ -1,5 +1,5 @@
 package com.talenttalk.jobservice.entity;
 
 public enum ApplicationStatus {
-    PENDING, SELECTED, REJECTED, WITHDRAWN
+    PENDING, SELECTED, REJECTED, WITHDRAWN, PAID
 }

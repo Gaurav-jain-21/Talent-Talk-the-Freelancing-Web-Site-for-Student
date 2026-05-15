@@ -50,6 +50,16 @@ export const authApi = {
       }),
     ),
   changePassword: (payload) => data(api.post("/auth/change-password", payload)),
+  forgotPassword: (payload) => data(api.post("/auth/forgot-password", payload)),
+  resetPassword: (payload) => data(api.post("/auth/reset-password", payload)),
+  validate: (token) =>
+    data(
+      api.get("/auth/validate", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+    ),
 };
 
 export const jobApi = {
@@ -67,6 +77,8 @@ export const jobApi = {
     ),
   studentApplications: (userId) => data(api.get(`/job/student/${userId}`)),
   withdraw: (id) => data(api.post(`/job/application/${id}/withdraw`)),
+  updateWorkStatus: (applicationId, workStatus) =>
+    data(api.post(`/job/application/${applicationId}/work-status/${workStatus}`)),
   post: (payload) => data(api.post("/job/post", jobPayload(payload))),
   update: (jobId, payload) => data(api.put(`/job/${jobId}`, jobPayload(payload))),
   close: (id) => data(api.post(`/job/${id}/close`)),
@@ -110,6 +122,12 @@ export const studentApi = {
   browseJobs: () => data(api.get("/student/jobs")),
   applications: (userId) =>
     data(api.get(`/student/profile/${userId}/applications`)),
+  updateApplicationWorkStatus: (applicationId, workStatus) =>
+    data(
+      api.post(`/student/application/${applicationId}/work-status`, null, {
+        params: { workStatus },
+      }),
+    ),
 };
 
 export const companyApi = {
@@ -121,12 +139,40 @@ export const companyApi = {
         params: { status: payload.status || payload },
       }),
     ),
+  updateWorkStatus: (applicationId, workStatus) =>
+    data(
+      api.post(`/company/application/${applicationId}/work-status`, null, {
+        params: { workStatus },
+      }),
+    ),
   students: () => data(api.get("/company/students")),
   student: (userId) => data(api.get(`/company/students/${userId}`)),
   profile: (userId) => data(api.get(`/company/profile/${userId}`)),
   createProfile: (payload) => data(api.post("/company/profile", payload)),
   updateProfile: (userId, payload) =>
     data(api.put(`/company/profile/${userId}`, payload)),
+};
+
+export const paymentApi = {
+  key: () => data(api.get("/payment/key")),
+  create: (payload) =>
+    data(
+      api.post("/payment/create", {
+        companyId: numberOrNull(payload.companyId),
+        jobId: numberOrNull(payload.jobId),
+        studentId: numberOrNull(payload.studentId),
+        applicationId: numberOrNull(payload.applicationId),
+        companyName: payload.companyName || "",
+        studentName: payload.studentName || "",
+        jobTitle: payload.jobTitle || "",
+        amount: Number(payload.amount || 0),
+      }),
+    ),
+  verify: (payload) => data(api.post("/payment/verify", payload)),
+  company: (companyId) => data(api.get(`/payment/company/${companyId}`)),
+  student: (studentId) => data(api.get(`/payment/student/${studentId}`)),
+  all: () => data(api.get("/payment/all")),
+  byId: (paymentId) => data(api.get(`/payment/${paymentId}`)),
 };
 
 export const interviewApi = {
@@ -167,6 +213,9 @@ export const adminApi = {
   students: () => data(api.get("/admin/students")),
   companies: () => data(api.get("/admin/companies")),
   jobs: () => data(api.get("/admin/jobs")),
+  payments: () => data(api.get("/admin/payments")),
   closeJob: (id) => data(api.patch(`/admin/jobs/${id}/close`)),
   deleteJob: (id) => data(api.delete(`/admin/jobs/${id}`)),
+  deleteStudent: (id) => data(api.delete(`/admin/students/${id}`)),
+  deleteCompany: (id) => data(api.delete(`/admin/companies/${id}`)),
 };

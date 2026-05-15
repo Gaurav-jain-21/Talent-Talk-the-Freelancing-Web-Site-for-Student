@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 
@@ -26,7 +27,12 @@ public class OAuth2FailureHandler
         getRedirectStrategy().sendRedirect(
                 request,
                 response,
-                redirectUrl + "/login?error=oauth_failed"
+                UriComponentsBuilder.fromUriString(redirectUrl)
+                        .path("/oauth2/callback")
+                        .queryParam("error", "oauth_failed")
+                        .queryParam("message", exception.getMessage())
+                        .build()
+                        .toUriString()
         );
     }
 }

@@ -21,9 +21,9 @@ export default function AdminDashboard() {
         <SkeletonGrid cards={4} />
       ) : (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="Students" value={pick(data, ["students", "studentCount"], 0)} icon={Users} />
-          <StatCard label="Jobs" value={pick(data, ["jobs", "jobCount"], 0)} icon={BriefcaseBusiness} tone="cyan" />
-          <StatCard label="Companies" value={pick(data, ["companies", "companyCount"], 0)} icon={Activity} tone="green" />
+          <StatCard label="Students" value={pick(data, ["totalStudents", "students", "studentCount"], 0)} icon={Users} />
+          <StatCard label="Jobs" value={pick(data, ["totalJobs", "jobs", "jobCount"], 0)} icon={BriefcaseBusiness} tone="cyan" />
+          <StatCard label="Companies" value={pick(data, ["totalCompanies", "companies", "companyCount"], 0)} icon={Activity} tone="green" />
           <StatCard label="Services" value={services.length} icon={Server} tone="yellow" />
         </div>
       )}
@@ -50,4 +50,3 @@ export default function AdminDashboard() {
     </Page>
   );
 }
-

@@ -16,6 +16,11 @@ public class PaymentRequest {
     @NotNull(message = "Student ID cannot be null")
     private Long studentId;
 
+    private Long applicationId;
+    private String companyName;
+    private String studentName;
+    private String jobTitle;
+
     @NotNull(message = "Amount cannot be null")
     @Min(value = 1, message = "Amount must be at least 1")
     @Max(value = 1000000, message = "Amount cannot exceed 10 lakhs")

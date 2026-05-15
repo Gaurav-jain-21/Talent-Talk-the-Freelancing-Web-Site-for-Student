@@ -42,10 +42,20 @@ public class AdminController {
 
 
 
-    @GetMapping("/payments/{companyId}")
+    @GetMapping("/payments/{companyId:\\d+}")
     public ResponseEntity<List<Object>> getPayments(
             @PathVariable Long companyId) {
         return ResponseEntity.ok(adminService.getAllPayments(companyId));
+    }
+
+    @GetMapping("/payments")
+    public ResponseEntity<List<Object>> getAllPaymentsLegacy() {
+        return ResponseEntity.ok(adminService.getAllPayments());
+    }
+
+    @GetMapping("/payments/all")
+    public ResponseEntity<List<Object>> getAllPayments() {
+        return ResponseEntity.ok(adminService.getAllPayments());
     }
 
 
@@ -53,6 +63,18 @@ public class AdminController {
     public ResponseEntity<String> deleteJob(
             @PathVariable Long jobId) {
         return ResponseEntity.ok(adminService.deleteJob(jobId));
+    }
+
+    @DeleteMapping("/students/{userId}")
+    public ResponseEntity<String> deleteStudent(
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(adminService.deleteStudent(userId));
+    }
+
+    @DeleteMapping("/companies/{userId}")
+    public ResponseEntity<String> deleteCompany(
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(adminService.deleteCompany(userId));
     }
     @PatchMapping("/jobs/{jobId}/close")
     public ResponseEntity<Object> closeJob(

@@ -6,11 +6,14 @@ import AuthLayout from "./layouts/AuthLayout";
 import AppLayout from "./layouts/AppLayout";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 import OAuthCallback from "./pages/auth/OAuthCallback";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import JobList from "./pages/student/JobList";
 import StudentProfile from "./pages/student/StudentProfile";
 import MyApplications from "./pages/student/MyApplications";
+import Works from "./pages/student/Works";
+import StudentPayments from "./pages/student/Payments";
 import Interview from "./pages/student/Interview";
 import Chat from "./pages/Chat";
 import CompanyDashboard from "./pages/company/CompanyDashboard";
@@ -23,9 +26,12 @@ import StudentList from "./pages/company/StudentList";
 import StudentDetail from "./pages/company/StudentDetail";
 import InterviewResults from "./pages/company/InterviewResults";
 import CompanyProfile from "./pages/company/CompanyProfile";
+import CompanyPayments from "./pages/company/Payments";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageStudents from "./pages/admin/ManageStudents";
 import ManageJobs from "./pages/admin/ManageJobs";
+import ManageCompanies from "./pages/admin/ManageCompanies";
+import ManagePayments from "./pages/admin/ManagePayments";
 
 export default function App() {
   return (
@@ -37,6 +43,7 @@ export default function App() {
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/oauth2/callback" element={<OAuthCallback />} />
             </Route>
 
@@ -45,6 +52,8 @@ export default function App() {
                 <Route path="/student/dashboard" element={<StudentDashboard />} />
                 <Route path="/student/jobs" element={<JobList />} />
                 <Route path="/student/applications" element={<MyApplications />} />
+                <Route path="/student/works" element={<Works />} />
+                <Route path="/student/payments" element={<StudentPayments />} />
                 <Route path="/student/profile" element={<StudentProfile />} />
                 <Route path="/student/chat" element={<Chat />} />
               </Route>
@@ -62,6 +71,7 @@ export default function App() {
                 <Route path="/company/students" element={<StudentList />} />
                 <Route path="/company/students/:userId" element={<StudentDetail />} />
                 <Route path="/company/interviews" element={<InterviewResults />} />
+                <Route path="/company/payments" element={<CompanyPayments />} />
                 <Route path="/company/chat" element={<Chat />} />
                 <Route path="/company/profile" element={<CompanyProfile />} />
               </Route>
@@ -71,7 +81,9 @@ export default function App() {
               <Route element={<AppLayout role="ADMIN" />}>
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/students" element={<ManageStudents />} />
+                <Route path="/admin/companies" element={<ManageCompanies />} />
                 <Route path="/admin/jobs" element={<ManageJobs />} />
+                <Route path="/admin/payments" element={<ManagePayments />} />
               </Route>
             </Route>
 

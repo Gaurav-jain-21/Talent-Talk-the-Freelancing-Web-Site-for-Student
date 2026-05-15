@@ -12,7 +12,7 @@ import {
   TextArea,
 } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { errorMessage } from "../../utils/format";
 
 export default function PostJob() {

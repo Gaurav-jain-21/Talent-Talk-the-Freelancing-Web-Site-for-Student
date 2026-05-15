@@ -28,6 +28,11 @@ public class Payment {
     @Column(nullable = false)
     private Long studentId;
 
+    private Long applicationId;
+    private String companyName;
+    private String studentName;
+    private String jobTitle;
+
     @Column(nullable = false)
     private Double amount;
 

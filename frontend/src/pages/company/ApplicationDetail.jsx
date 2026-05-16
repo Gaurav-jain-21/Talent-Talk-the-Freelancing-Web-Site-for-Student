@@ -209,7 +209,11 @@ export default function ApplicationDetail() {
       </div>
 
       {showResumeModal && resumeUrl && studentId && (
-        <ResumePreviewModal userId={studentId} onClose={() => setShowResumeModal(false)} />
+        <ResumePreviewModal
+          userId={studentId}
+          sourceUrl={resumeUrl}
+          onClose={() => setShowResumeModal(false)}
+        />
       )}
     </Page>
   );

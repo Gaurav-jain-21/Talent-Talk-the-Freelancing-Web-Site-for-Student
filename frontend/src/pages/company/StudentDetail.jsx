@@ -180,7 +180,11 @@ export default function StudentDetail() {
       </section>
 
       {showResumeModal && resumeUrl && (
-        <ResumePreviewModal userId={userId} onClose={() => setShowResumeModal(false)} />
+        <ResumePreviewModal
+          userId={userId}
+          sourceUrl={resumeUrl}
+          onClose={() => setShowResumeModal(false)}
+        />
       )}
     </Page>
   );

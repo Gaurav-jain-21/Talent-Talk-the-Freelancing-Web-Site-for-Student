@@ -451,6 +451,7 @@ export default function StudentProfile() {
       {showResumeModal && resumeUrl && (
         <ResumePreviewModal
           userId={user.userId}
+          sourceUrl={resumeUrl}
           onClose={() => setShowResumeModal(false)}
         />
       )}

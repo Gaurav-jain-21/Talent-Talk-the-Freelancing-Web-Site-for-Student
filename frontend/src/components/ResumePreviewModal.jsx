@@ -3,7 +3,7 @@ import { ExternalLink, FileText, X } from "lucide-react";
 import { studentApi } from "../api/services";
 import { GhostButton, GlassCard } from "./ui/Primitives";
 
-export default function ResumePreviewModal({ userId, onClose }) {
+export default function ResumePreviewModal({ userId, sourceUrl = "", onClose }) {
   const [preview, setPreview] = useState({
     loading: true,
     url: "",
@@ -57,6 +57,10 @@ export default function ResumePreviewModal({ userId, onClose }) {
 
   const isImage = preview.type.startsWith("image/");
   const canInline = isImage || preview.type.includes("pdf");
+  const officePreviewUrl =
+    sourceUrl && isOfficeDocument(preview.type, sourceUrl)
+      ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(sourceUrl)}`
+      : "";
 
   return (
     <div
@@ -110,10 +114,16 @@ export default function ResumePreviewModal({ userId, onClose }) {
                 className="h-[66vh] w-full border-0"
                 title="Resume Preview"
               />
+            ) : officePreviewUrl ? (
+              <iframe
+                src={officePreviewUrl}
+                className="h-[66vh] w-full border-0"
+                title="Resume Preview"
+              />
             ) : (
               <div className="grid place-items-center p-8 text-center">
                 <FileText className="mx-auto mb-4 h-10 w-10 text-cyan-100" />
-                <p className="font-bold text-white">This file type cannot be shown inline.</p>
+                <p className="font-bold text-white">This resume format cannot be previewed inline.</p>
                 <p className="mt-2 max-w-md text-sm text-slate-400">
                   Uploading the resume as a PDF will show it directly inside this panel.
                 </p>
@@ -156,4 +166,15 @@ async function detectBlobType(blob, fallbackType = "") {
 function matches(bytes, signature) {
   if (bytes.length < signature.length) return false;
   return signature.every((value, index) => bytes[index] === value);
+}
+
+function isOfficeDocument(contentType = "", url = "") {
+  const normalizedType = contentType.toLowerCase();
+  const normalizedUrl = url.toLowerCase().split("?")[0];
+  return (
+    normalizedType.includes("word") ||
+    normalizedType.includes("officedocument") ||
+    normalizedUrl.endsWith(".doc") ||
+    normalizedUrl.endsWith(".docx")
+  );
 }

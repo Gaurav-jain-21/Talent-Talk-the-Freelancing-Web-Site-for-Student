@@ -63,6 +63,7 @@ export default function AppLayout({ role }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const location = useLocation();
   const links = nav[role] || [];
+  const profilePath = links.find(([label]) => label === "Profile")?.[1] || routeFallback(role);
   const paymentNotifications = useAsync(
     () => (role === "STUDENT" && user?.userId ? paymentApi.student(user.userId) : Promise.resolve([])),
     [role, user?.userId],
@@ -146,6 +147,7 @@ export default function AppLayout({ role }) {
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  aria-label="Toggle payment notifications"
                   className="relative rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-slate-300 hover:text-white"
                   onClick={() => setNotificationsOpen((value) => !value)}
                 >
@@ -174,9 +176,9 @@ export default function AppLayout({ role }) {
                     )}
                   </div>
                 )}
-                <button className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-slate-300 hover:text-white">
+                <Link to={profilePath} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-slate-300 hover:text-white" aria-label="Open profile settings">
                   <Settings className="h-5 w-5" />
-                </button>
+                </Link>
               </div>
             </div>
           </header>
@@ -185,13 +187,22 @@ export default function AppLayout({ role }) {
           </div>
         </div>
       </div>
-      <div className="fixed bottom-4 left-4 right-4 z-40 grid grid-cols-5 gap-2 rounded-3xl border border-white/10 bg-slate-950/80 p-2 backdrop-blur-2xl lg:hidden">
-        {links.slice(0, 5).map(([label, href, Icon]) => (
-          <NavLink key={label} to={href} className={({ isActive }) => `grid place-items-center rounded-2xl p-3 ${isActive ? "bg-indigo-500/20 text-cyan-100" : "text-slate-500"}`} title={label}>
-            <Icon className="h-5 w-5" />
-          </NavLink>
-        ))}
+      <div className="fixed bottom-4 left-4 right-4 z-40 rounded-3xl border border-white/10 bg-slate-950/85 p-2 backdrop-blur-2xl lg:hidden">
+        <div className="flex gap-2 overflow-x-auto">
+          {links.map(([label, href, Icon]) => (
+            <NavLink key={label} to={href} className={({ isActive }) => `grid min-w-16 place-items-center rounded-2xl px-3 py-2.5 ${isActive ? "bg-indigo-500/20 text-cyan-100" : "text-slate-500"}`} title={label} aria-label={label}>
+              <Icon className="h-5 w-5" />
+              <span className="mt-1 max-w-14 truncate text-[10px] font-bold">{label}</span>
+            </NavLink>
+          ))}
+        </div>
       </div>
     </MeshBackground>
   );
+}
+
+function routeFallback(role) {
+  if (role === "COMPANY") return "/company/profile";
+  if (role === "ADMIN") return "/admin/dashboard";
+  return "/student/profile";
 }

@@ -16,6 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -88,6 +92,43 @@ public class StudentService {
         return resumeUrl;
     }
 
+    public ResumePreview getResumePreview(Long userId) throws IOException {
+        StudentProfile profile = studentProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
+
+        String resumeUrl = profile.getResumeUrl();
+        if (resumeUrl == null || resumeUrl.isBlank()) {
+            throw new RuntimeException("Resume not uploaded");
+        }
+
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(resumeUrl))
+                    .GET()
+                    .build();
+            HttpResponse<byte[]> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofByteArray());
+
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                throw new IOException("Unable to load resume");
+            }
+
+            String contentType = response.headers()
+                    .firstValue("content-type")
+                    .orElse(detectResumeContentType(resumeUrl));
+
+            return new ResumePreview(
+                    response.body(),
+                    normalizeResumeContentType(contentType, resumeUrl, response.body()),
+                    resumeFileName(resumeUrl));
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Resume preview interrupted", exception);
+        } catch (IllegalArgumentException exception) {
+            throw new IOException("Invalid resume URL", exception);
+        }
+    }
+
     public StudentProfile updateWorkStatus(Long userId, WorkStatus status) {
         StudentProfile profile = studentProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
@@ -107,12 +148,12 @@ public class StudentService {
     public void deleteProfile(Long userId) {
         StudentProfile profile = studentProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
-        projectRepository.deleteByStudentId(profile.getId());
+        projectRepository.deleteByStudentId(userId);
         studentProfileRepository.delete(profile);
     }
 
     public Project addProject(Long studentId, ProjectRequest request) {
-        studentProfileRepository.findById(studentId)
+        studentProfileRepository.findByUserId(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         Project project = new Project();
@@ -151,4 +192,61 @@ public class StudentService {
         }
     }
 
+    private static String normalizeResumeContentType(String contentType, String resumeUrl, byte[] bytes) {
+        String detectedFromBytes = detectResumeContentType(bytes);
+        if (!"application/octet-stream".equals(detectedFromBytes)) {
+            return detectedFromBytes;
+        }
+
+        String normalized = contentType == null ? "" : contentType.toLowerCase();
+        if (normalized.contains("pdf")) return "application/pdf";
+        if (normalized.startsWith("image/")) return contentType;
+        if (normalized.contains("word") || normalized.contains("officedocument")) {
+            return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        }
+        return detectResumeContentType(resumeUrl);
+    }
+
+    private static String detectResumeContentType(byte[] bytes) {
+        if (bytes == null || bytes.length < 4) {
+            return "application/octet-stream";
+        }
+        if (bytes[0] == 0x25 && bytes[1] == 0x50 && bytes[2] == 0x44 && bytes[3] == 0x46) {
+            return "application/pdf";
+        }
+        if ((bytes[0] & 0xFF) == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+            return "image/png";
+        }
+        if ((bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xD8 && (bytes[2] & 0xFF) == 0xFF) {
+            return "image/jpeg";
+        }
+        if (bytes.length >= 12
+                && bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46
+                && bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
+            return "image/webp";
+        }
+        return "application/octet-stream";
+    }
+
+    private static String detectResumeContentType(String resumeUrl) {
+        String normalized = resumeUrl == null ? "" : resumeUrl.toLowerCase();
+        if (normalized.contains(".pdf")) return "application/pdf";
+        if (normalized.contains(".png")) return "image/png";
+        if (normalized.contains(".jpg") || normalized.contains(".jpeg")) return "image/jpeg";
+        if (normalized.contains(".webp")) return "image/webp";
+        if (normalized.contains(".doc") || normalized.contains(".docx")) {
+            return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        }
+        return "application/octet-stream";
+    }
+
+    private static String resumeFileName(String resumeUrl) {
+        String path = URI.create(resumeUrl).getPath();
+        int slashIndex = path.lastIndexOf('/');
+        String fileName = slashIndex >= 0 ? path.substring(slashIndex + 1) : path;
+        return fileName.isBlank() ? "resume.pdf" : fileName;
+    }
+
+    public record ResumePreview(byte[] bytes, String contentType, String fileName) {
+    }
 }

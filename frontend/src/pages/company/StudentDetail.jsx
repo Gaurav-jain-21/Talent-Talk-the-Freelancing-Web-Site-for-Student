@@ -5,10 +5,10 @@ import {
   FileText,
   GraduationCap,
   Eye,
-  X,
 } from "lucide-react";
 import { useState } from "react";
 import { companyApi, studentApi } from "../../api/services";
+import ResumePreviewModal from "../../components/ResumePreviewModal";
 import {
   Badge,
   EmptyState,
@@ -71,11 +71,9 @@ export default function StudentDetail() {
           </div>
           <div className="flex flex-wrap gap-2">
             {resumeUrl ? (
-              <button onClick={() => setShowResumeModal(true)}>
-                <GhostButton>
-                  <Eye className="h-4 w-4" /> View Resume
-                </GhostButton>
-              </button>
+              <GhostButton onClick={() => setShowResumeModal(true)}>
+                <Eye className="h-4 w-4" /> View Resume
+              </GhostButton>
             ) : (
               <GhostButton disabled>
                 <FileText className="h-4 w-4" /> No Resume
@@ -182,36 +180,7 @@ export default function StudentDetail() {
       </section>
 
       {showResumeModal && resumeUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur"
-          onClick={() => setShowResumeModal(false)}
-        >
-          <GlassCard
-            hover={false}
-            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden p-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-white/10 p-6">
-              <h3 className="text-xl font-black text-white">Resume Preview</h3>
-              <button
-                onClick={() => setShowResumeModal(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div
-              className="overflow-y-auto"
-              style={{ maxHeight: "calc(90vh - 80px)" }}
-            >
-              <iframe
-                src={resumeUrl}
-                className="h-[600px] w-full border-0"
-                title="Resume Preview"
-              />
-            </div>
-          </GlassCard>
-        </div>
+        <ResumePreviewModal userId={userId} onClose={() => setShowResumeModal(false)} />
       )}
     </Page>
   );

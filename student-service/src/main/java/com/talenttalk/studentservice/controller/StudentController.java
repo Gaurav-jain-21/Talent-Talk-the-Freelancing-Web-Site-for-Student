@@ -6,8 +6,12 @@ import com.talenttalk.studentservice.entity.Project;
 import com.talenttalk.studentservice.entity.StudentProfile;
 import com.talenttalk.studentservice.entity.WorkStatus;
 import com.talenttalk.studentservice.service.StudentService;
+import com.talenttalk.studentservice.service.StudentService.ResumePreview;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +38,20 @@ public class StudentController {
     public ResponseEntity<String> uploadResume(@PathVariable Long userId, @RequestParam("file") MultipartFile file) throws IOException {
         String url= studentService.uploadResume(userId,file);
         return ResponseEntity.ok("Resume uploaded : "+url);
+    }
+
+    @GetMapping("/profile/{userId}/resume/preview")
+    public ResponseEntity<byte[]> previewResume(@PathVariable Long userId) throws IOException {
+        ResumePreview preview = studentService.getResumePreview(userId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(preview.contentType()))
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.inline()
+                                .filename(preview.fileName())
+                                .build()
+                                .toString())
+                .body(preview.bytes());
     }
 
     @PatchMapping("/profile/{userId}/status")

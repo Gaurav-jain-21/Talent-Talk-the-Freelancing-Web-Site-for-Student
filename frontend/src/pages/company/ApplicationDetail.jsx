@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ArrowLeft, CalendarClock, ExternalLink, FileText } from "lucide-react";
+import { ArrowLeft, CalendarClock, ExternalLink, Eye, FileText } from "lucide-react";
 import { companyApi, interviewApi, studentApi } from "../../api/services";
+import ResumePreviewModal from "../../components/ResumePreviewModal";
 import {
   Badge,
   EmptyState,
@@ -23,6 +24,7 @@ export default function ApplicationDetail() {
   const { user } = useAuth();
   const { applicationId } = useParams();
   const [deadline, setDeadline] = useState("");
+  const [showResumeModal, setShowResumeModal] = useState(false);
   const applicationsQuery = useAsync(() => loadCompanyApplicationGroups(user.userId), [user.userId]);
   const match = flattenCompanyApplications(applicationsQuery.data || []).find(
     (item) => String(item.applicationId) === String(applicationId),
@@ -123,9 +125,9 @@ export default function ApplicationDetail() {
           </div>
           <div className="flex flex-wrap gap-2">
             {resumeUrl ? (
-              <a href={resumeUrl} target="_blank" rel="noreferrer">
-                <GhostButton><FileText className="h-4 w-4" /> Resume</GhostButton>
-              </a>
+              <GhostButton onClick={() => setShowResumeModal(true)}>
+                <Eye className="h-4 w-4" /> View Resume
+              </GhostButton>
             ) : (
               <GhostButton disabled><FileText className="h-4 w-4" /> No Resume</GhostButton>
             )}
@@ -205,6 +207,10 @@ export default function ApplicationDetail() {
           </div>
         </GlassCard>
       </div>
+
+      {showResumeModal && resumeUrl && studentId && (
+        <ResumePreviewModal userId={studentId} onClose={() => setShowResumeModal(false)} />
+      )}
     </Page>
   );
 }

@@ -115,6 +115,10 @@ export const studentApi = {
       }),
     );
   },
+  resumePreview: (userId) =>
+    api.get(`/student/profile/${userId}/resume/preview`, {
+      responseType: "blob",
+    }),
   projects: (userId) => data(api.get(`/student/profile/${userId}/projects`)),
   addProject: (userId, payload) =>
     data(api.post(`/student/profile/${userId}/project`, payload)),

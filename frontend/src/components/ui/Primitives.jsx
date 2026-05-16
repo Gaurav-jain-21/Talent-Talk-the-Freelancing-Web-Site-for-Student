@@ -53,12 +53,13 @@ export function GhostButton({ children, className = "", type = "button", ...prop
   );
 }
 
-export function GlassCard({ children, className = "", hover = true }) {
+export function GlassCard({ children, className = "", hover = true, ...props }) {
   return (
     <motion.div
       whileHover={hover ? { y: -4, rotateX: 1.5, rotateY: -1.5 } : undefined}
       transition={{ type: "spring", stiffness: 260, damping: 22 }}
       className={`glass-card ${className}`}
+      {...props}
     >
       {children}
     </motion.div>

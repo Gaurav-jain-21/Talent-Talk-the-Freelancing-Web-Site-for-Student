@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FileUp, FolderGit2, Save, Plus, X, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 import { studentApi } from "../../api/services";
+import ResumePreviewModal from "../../components/ResumePreviewModal";
 import {
   Badge,
   EmptyState,
@@ -35,6 +36,7 @@ export default function StudentProfile() {
   const [skill, setSkill] = useState("");
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showResumeModal, setShowResumeModal] = useState(false);
+  const [addingProject, setAddingProject] = useState(false);
   const [projectForm, setProjectForm] = useState({
     title: "",
     description: "",
@@ -43,6 +45,7 @@ export default function StudentProfile() {
   });
   const skills = asArray(pick(edit ? draft : profile, ["skills"], []));
   const projects = asArray(projectsQuery.data);
+  const resumeUrl = value("resumeUrl", "");
 
   function value(key, fallback = "") {
     return pick(edit ? draft : profile, [key], fallback);
@@ -88,6 +91,27 @@ export default function StudentProfile() {
     }
   }
 
+  async function ensureProfileExists() {
+    if (profile?.id) return profile;
+
+    const created = await studentApi.createProfile({
+      userId: user.userId,
+      fullName: value("fullName", user.name),
+      email: value("email", user.email),
+      college: value("college", ""),
+      degree: value("degree", ""),
+      graduationYear: value("graduationYear", new Date().getFullYear()),
+      bio: value("bio", ""),
+      skills,
+      resumeUrl,
+      githubUrl: value("githubUrl", ""),
+      linkedinUrl: value("linkedinUrl", ""),
+      workStatus: value("workStatus", "AVAILABLE"),
+    });
+    profileQuery.setData(created);
+    return created;
+  }
+
   function addSkill() {
     if (!skill.trim()) return;
     update("skills", [...skills, skill.trim()]);
@@ -99,7 +123,9 @@ export default function StudentProfile() {
       toast.error("Project title is required");
       return;
     }
+    setAddingProject(true);
     try {
+      await ensureProfileExists();
       await studentApi.addProject(user.userId, projectForm);
       toast.success("Project added successfully");
       setProjectForm({
@@ -108,9 +134,12 @@ export default function StudentProfile() {
         techStack: "",
         projectUrl: "",
       });
-      projectsQuery.refresh();
+      setShowProjectForm(false);
+      await projectsQuery.refresh();
     } catch (error) {
       toast.error(errorMessage(error));
+    } finally {
+      setAddingProject(false);
     }
   }
 
@@ -127,8 +156,6 @@ export default function StudentProfile() {
       </Page>
     );
   }
-
-  const resumeUrl = value("resumeUrl", "");
 
   return (
     <Page className="space-y-6">
@@ -250,23 +277,20 @@ export default function StudentProfile() {
           {resumeUrl ? (
             <div className="space-y-3">
               <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
-                <p className="text-sm text-emerald-100">✓ Resume uploaded</p>
+                <p className="text-sm text-emerald-100">Resume uploaded</p>
               </div>
-              <button
+              <GhostButton
                 onClick={() => setShowResumeModal(true)}
                 className="w-full"
               >
-                <GhostButton className="w-full">
-                  <Eye className="h-4 w-4" /> View Resume
-                </GhostButton>
-              </button>
+                <Eye className="h-4 w-4" /> View Resume
+              </GhostButton>
               {edit && (
-                <label className="block">
-                  <GhostButton className="w-full">
-                    <FileUp className="h-4 w-4" /> Update Resume
-                  </GhostButton>
+                <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-slate-100 backdrop-blur-xl transition hover:border-cyan-300/40 hover:bg-cyan-400/10">
+                  <FileUp className="h-4 w-4" /> Update Resume
                   <input
                     type="file"
+                    accept=".pdf,.doc,.docx"
                     className="hidden"
                     onChange={uploadResume}
                   />
@@ -282,7 +306,12 @@ export default function StudentProfile() {
               <span className="mt-1 text-sm text-slate-500">
                 PDF/DOC formats supported
               </span>
-              <input type="file" className="hidden" onChange={uploadResume} />
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="hidden"
+                onChange={uploadResume}
+              />
             </label>
           )}
         </GlassCard>
@@ -290,14 +319,13 @@ export default function StudentProfile() {
         <GlassCard className="p-6">
           <div className="mb-5 flex items-center justify-between">
             <h3 className="text-xl font-black text-white">Projects</h3>
-            {edit && (
-              <GradientButton
-                onClick={() => setShowProjectForm(!showProjectForm)}
-                className="p-2"
-              >
-                <Plus className="h-4 w-4" />
-              </GradientButton>
-            )}
+            <GradientButton
+              onClick={() => setShowProjectForm(!showProjectForm)}
+              className="p-2"
+              aria-label="Add project"
+            >
+              <Plus className="h-4 w-4" />
+            </GradientButton>
           </div>
           {projects.length ? (
             <div className="space-y-3">
@@ -346,18 +374,30 @@ export default function StudentProfile() {
         </GlassCard>
       </div>
 
-      {showProjectForm && edit && (
-        <GlassCard className="p-6">
-          <div className="mb-5 flex items-center justify-between">
-            <h3 className="text-xl font-black text-white">Add Project</h3>
+      {showProjectForm && (
+        <GlassCard className="p-6 xl:col-span-2">
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-black text-white">Add Project</h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Add a portfolio item companies can review with your application.
+              </p>
+            </div>
             <button
               onClick={() => setShowProjectForm(false)}
-              className="text-slate-400 hover:text-white"
+              className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white"
+              aria-label="Close project form"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
-          <div className="space-y-4">
+          <form
+            className="grid gap-4 lg:grid-cols-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              addProject();
+            }}
+          >
             <Field
               label="Project Title"
               value={projectForm.title}
@@ -365,14 +405,6 @@ export default function StudentProfile() {
                 setProjectForm({ ...projectForm, title: e.target.value })
               }
               placeholder="Enter project title"
-            />
-            <TextArea
-              label="Project Description"
-              value={projectForm.description}
-              onChange={(e) =>
-                setProjectForm({ ...projectForm, description: e.target.value })
-              }
-              placeholder="Describe your project"
             />
             <Field
               label="Tech Stack (comma-separated)"
@@ -382,17 +414,27 @@ export default function StudentProfile() {
               }
               placeholder="e.g., React, Node.js, MongoDB"
             />
+            <TextArea
+              label="Project Description"
+              className="lg:col-span-2"
+              value={projectForm.description}
+              onChange={(e) =>
+                setProjectForm({ ...projectForm, description: e.target.value })
+              }
+              placeholder="Describe your project"
+            />
             <Field
               label="Project URL"
               type="url"
+              className="lg:col-span-2"
               value={projectForm.projectUrl}
               onChange={(e) =>
                 setProjectForm({ ...projectForm, projectUrl: e.target.value })
               }
               placeholder="https://github.com/..."
             />
-            <div className="flex gap-3">
-              <GradientButton onClick={addProject} className="flex-1">
+            <div className="flex flex-col gap-3 sm:flex-row lg:col-span-2">
+              <GradientButton type="submit" loading={addingProject} className="flex-1">
                 Add Project
               </GradientButton>
               <GhostButton
@@ -402,41 +444,15 @@ export default function StudentProfile() {
                 Cancel
               </GhostButton>
             </div>
-          </div>
+          </form>
         </GlassCard>
       )}
 
       {showResumeModal && resumeUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur"
-          onClick={() => setShowResumeModal(false)}
-        >
-          <GlassCard
-            hover={false}
-            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden p-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-white/10 p-6">
-              <h3 className="text-xl font-black text-white">Resume Preview</h3>
-              <button
-                onClick={() => setShowResumeModal(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div
-              className="overflow-y-auto"
-              style={{ maxHeight: "calc(90vh - 80px)" }}
-            >
-              <iframe
-                src={resumeUrl}
-                className="h-[600px] w-full border-0"
-                title="Resume Preview"
-              />
-            </div>
-          </GlassCard>
-        </div>
+        <ResumePreviewModal
+          userId={user.userId}
+          onClose={() => setShowResumeModal(false)}
+        />
       )}
     </Page>
   );

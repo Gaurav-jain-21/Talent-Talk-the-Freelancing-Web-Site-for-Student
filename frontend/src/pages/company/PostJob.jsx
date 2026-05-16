@@ -22,7 +22,7 @@ export default function PostJob() {
   const [companyProfile, setCompanyProfile] = useState(null);
   const [form, setForm] = useState({
     title: "",
-    company: "",
+    company: user.name || "",
     type: "Internship",
     description: "",
     location: "",
@@ -47,12 +47,16 @@ export default function PostJob() {
             companyId: profile.companyId || user.userId,
           }));
         }
-      } catch (error) {
-        console.error("Failed to fetch company profile", error);
+      } catch {
+        setForm((current) => ({
+          ...current,
+          company: current.company || user.name || "",
+          companyId: user.userId,
+        }));
       }
     };
     fetchCompanyProfile();
-  }, [user.userId]);
+  }, [user.name, user.userId]);
 
   function update(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -108,14 +112,14 @@ export default function PostJob() {
     setLoading(true);
     try {
       await jobApi.post(form);
-      toast.success("Job posted successfully! 🎉");
+      toast.success("Job posted successfully");
       setStep(1);
       setForm((current) => ({
         ...current,
         title: "",
         description: "",
         skills: [],
-        company: companyProfile?.companyName || "",
+        company: companyProfile?.companyName || user.name || "",
         companyId: user.userId,
         openings: "",
         lastDate: "",
@@ -238,7 +242,7 @@ export default function PostJob() {
           <div className="space-y-6">
             <div className="rounded-2xl border border-cyan-400/30 bg-cyan-400/10 p-4">
               <p className="text-sm font-semibold text-cyan-100">
-                ✓ Preview looks good? Click "Post Job Now" button at the bottom
+                Preview looks good? Click "Post Job Now" button at the bottom
                 to publish!
               </p>
             </div>

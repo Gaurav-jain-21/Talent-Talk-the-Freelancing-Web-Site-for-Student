@@ -83,8 +83,7 @@ public class StudentService {
         String resumeUrl = uploadResult.get("secure_url").toString();
 
         // Step 3 — save that URL in the student's profile
-        StudentProfile profile = studentProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+        StudentProfile profile = findOrCreateProfile(userId);
 
         profile.setResumeUrl(resumeUrl);
         studentProfileRepository.save(profile);
@@ -190,6 +189,23 @@ public class StudentService {
             return jobClient.updateApplicationWorkStatusPost(
                     applicationId, workStatus);
         }
+    }
+
+    private StudentProfile findOrCreateProfile(Long userId) {
+        return studentProfileRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    StudentProfile nextProfile = new StudentProfile();
+                    nextProfile.setUserId(userId);
+                    nextProfile.setFullName("");
+                    nextProfile.setEmail("");
+                    nextProfile.setCollege("");
+                    nextProfile.setDegree("");
+                    nextProfile.setGraduationYear(java.time.Year.now().getValue());
+                    nextProfile.setBio("");
+                    nextProfile.setSkills("");
+                    nextProfile.setWorkStatus(WorkStatus.AVAILABLE);
+                    return studentProfileRepository.save(nextProfile);
+                });
     }
 
     private static String normalizeResumeContentType(String contentType, String resumeUrl, byte[] bytes) {

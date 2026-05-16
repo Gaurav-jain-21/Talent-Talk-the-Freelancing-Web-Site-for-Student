@@ -83,6 +83,7 @@ export default function StudentProfile() {
     const formData = new FormData();
     formData.append("resume", file);
     try {
+      await ensureProfileExists();
       await studentApi.uploadResume(user.userId, formData);
       toast.success("Resume uploaded");
       profileQuery.refresh();

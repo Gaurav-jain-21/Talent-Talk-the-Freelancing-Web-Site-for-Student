@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { Inbox } from "lucide-react";
 import { jobApi } from "../../api/services";
@@ -74,17 +73,15 @@ export default function MyApplications() {
         <EmptyState icon={Inbox} title="No applications in this view" message="Change the filter or apply to a new role." />
       )}
 
-      <AnimatePresence>
-        {selected && (
-          <Modal title="Withdraw application?" onClose={() => setSelected(null)}>
-            <p className="text-slate-400">This will move your application out of the active hiring pipeline.</p>
-            <div className="mt-6 flex justify-end gap-3">
-              <GhostButton onClick={() => setSelected(null)}>Cancel</GhostButton>
-              <GradientButton onClick={withdraw}>Withdraw</GradientButton>
-            </div>
-          </Modal>
-        )}
-      </AnimatePresence>
+      {selected && (
+        <Modal title="Withdraw application?" onClose={() => setSelected(null)}>
+          <p className="text-slate-400">This will move your application out of the active hiring pipeline.</p>
+          <div className="mt-6 flex justify-end gap-3">
+            <GhostButton onClick={() => setSelected(null)}>Cancel</GhostButton>
+            <GradientButton onClick={withdraw}>Withdraw</GradientButton>
+          </div>
+        </Modal>
+      )}
     </Page>
   );
 }

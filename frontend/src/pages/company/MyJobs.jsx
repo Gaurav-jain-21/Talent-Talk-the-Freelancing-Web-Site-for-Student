@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { BriefcaseBusiness, CalendarClock, Edit3, PauseCircle, Trash2, Users } from "lucide-react";
 import { jobApi } from "../../api/services";
@@ -132,24 +131,22 @@ export default function MyJobs() {
         <EmptyState icon={BriefcaseBusiness} title="No jobs yet" message="Post a job and it will appear here with application counts and controls." />
       )}
 
-      <AnimatePresence>
-        {deleteTarget && (
-          <Modal title="Delete job?" onClose={() => setDeleteTarget(null)}>
-            <p className="text-slate-400">This removes the job from your company list.</p>
-            <div className="mt-6 flex justify-end gap-3">
-              <GhostButton onClick={() => setDeleteTarget(null)}>Cancel</GhostButton>
-              <GradientButton onClick={removeJob}>Delete</GradientButton>
-            </div>
-          </Modal>
-        )}
-        {editTarget && (
-          <EditJobModal
-            job={editTarget}
-            onClose={() => setEditTarget(null)}
-            onSave={saveJob}
-          />
-        )}
-      </AnimatePresence>
+      {deleteTarget && (
+        <Modal title="Delete job?" onClose={() => setDeleteTarget(null)}>
+          <p className="text-slate-400">This removes the job from your company list.</p>
+          <div className="mt-6 flex justify-end gap-3">
+            <GhostButton onClick={() => setDeleteTarget(null)}>Cancel</GhostButton>
+            <GradientButton onClick={removeJob}>Delete</GradientButton>
+          </div>
+        </Modal>
+      )}
+      {editTarget && (
+        <EditJobModal
+          job={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSave={saveJob}
+        />
+      )}
     </Page>
   );
 }

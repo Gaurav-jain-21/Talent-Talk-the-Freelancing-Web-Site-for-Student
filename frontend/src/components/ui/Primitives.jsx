@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Loader2, Search, X } from "lucide-react";
 import { statusTone } from "../../utils/format";
 
@@ -14,13 +13,13 @@ const toneClasses = {
 export function Logo({ compact = false }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-cyan-400 text-sm font-black text-white shadow-[0_0_35px_rgba(99,102,241,0.55)]">
+      <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#e8dab2] text-sm font-black text-[#1a1d1f]">
         TT
       </div>
       {!compact && (
         <div>
-          <p className="text-lg font-black leading-tight gradient-text">Talent Talk</p>
-          <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">Portal</p>
+          <p className="text-lg font-black leading-tight text-[#e8dab2]">Talent Talk</p>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-[#c0d6df]/70">Freelance Portal</p>
         </div>
       )}
     </div>
@@ -32,7 +31,7 @@ export function GradientButton({ children, className = "", loading = false, type
     <button
       type={type}
       disabled={loading || props.disabled}
-      className={`shine relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 px-5 py-3 text-sm font-bold text-white shadow-[0_0_28px_rgba(99,102,241,0.36)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-lg bg-[#e8dab2] px-5 py-3 text-sm font-bold text-[#1a1d1f] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
       {...props}
     >
       {loading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -45,7 +44,7 @@ export function GhostButton({ children, className = "", type = "button", ...prop
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-slate-100 backdrop-blur-xl transition hover:border-cyan-300/40 hover:bg-cyan-400/10 ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-semibold text-[#e8e8e8] transition hover:border-[#c0d6df]/40 hover:bg-[#4f6d7a]/25 ${className}`}
       {...props}
     >
       {children}
@@ -55,14 +54,9 @@ export function GhostButton({ children, className = "", type = "button", ...prop
 
 export function GlassCard({ children, className = "", hover = true, ...props }) {
   return (
-    <motion.div
-      whileHover={hover ? { y: -4, rotateX: 1.5, rotateY: -1.5 } : undefined}
-      transition={{ type: "spring", stiffness: 260, damping: 22 }}
-      className={`glass-card ${className}`}
-      {...props}
-    >
+    <div className={`glass-card ${hover ? "card-hover" : ""} ${className}`} {...props}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -88,12 +82,12 @@ export function TextArea({ label, className = "", ...props }) {
 export function SearchBox({ value, onChange, placeholder = "Search" }) {
   return (
     <div className="relative">
-      <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-cyan-100/70" />
+      <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#c0d6df]" />
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-3xl border border-white/10 bg-white/[0.05] py-5 pl-14 pr-5 text-base text-white outline-none backdrop-blur-xl transition focus:border-cyan-300/50 focus:shadow-[0_0_32px_rgba(6,182,212,0.18)]"
+        className="w-full rounded-full border border-white/10 bg-[#2c3539]/80 py-4 pl-14 pr-5 text-base text-[#e8dab2] outline-none transition focus:border-[#e8dab2]/70"
       />
     </div>
   );
@@ -147,17 +141,11 @@ export function EmptyState({ title, message, icon: Icon }) {
 
 export function Modal({ title, children, onClose }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      <div
       className="fixed inset-0 z-50 grid place-items-center bg-slate-950/70 p-4 backdrop-blur-xl"
       onClick={onClose}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.92, y: 20 }}
+      <div
         className="glass-card w-full max-w-lg p-6"
         onClick={(event) => event.stopPropagation()}
       >
@@ -168,8 +156,8 @@ export function Modal({ title, children, onClose }) {
           </button>
         </div>
         {children}
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
@@ -179,13 +167,9 @@ export function StatCard({ label, value, icon: Icon, tone = "indigo", note }) {
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-semibold text-slate-400">{label}</p>
-          <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-2 text-4xl font-black text-white"
-          >
+          <p className="mt-2 text-4xl font-black text-white">
             {value}
-          </motion.p>
+          </p>
         </div>
         {Icon && (
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.06] text-cyan-100">
@@ -207,7 +191,7 @@ export function ScoreRing({ score = 0, label = "Score" }) {
     <div className="relative grid h-32 w-32 place-items-center">
       <svg className="-rotate-90" width="128" height="128" viewBox="0 0 128 128">
         <circle cx="64" cy="64" r="44" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="12" />
-        <motion.circle
+        <circle
           cx="64"
           cy="64"
           r="44"
@@ -216,9 +200,7 @@ export function ScoreRing({ score = 0, label = "Score" }) {
           strokeWidth="12"
           strokeLinecap="round"
           strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          strokeDashoffset={offset}
         />
         <defs>
           <linearGradient id="scoreGradient" x1="0" x2="1">

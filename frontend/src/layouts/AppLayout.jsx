@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { useAuth } from "../context/useAuth";
 import { paymentApi } from "../api/services";
 import { asArray, formatCurrency, initials, pick } from "../utils/format";
@@ -80,10 +79,10 @@ export default function AppLayout({ role }) {
   return (
     <MeshBackground>
       <div className="flex h-screen overflow-hidden">
-        <aside className={`hidden h-screen shrink-0 border-r border-white/10 bg-slate-950/55 backdrop-blur-2xl transition-all lg:flex lg:flex-col ${collapsed ? "w-24" : "w-72"}`}>
-          <div className="flex items-center justify-between gap-3 p-6">
+        <aside className={`hidden h-screen shrink-0 border-r border-white/10 bg-[#20272a] transition-all lg:flex lg:flex-col ${collapsed ? "w-24" : "w-72"}`}>
+          <div className="flex items-center justify-between gap-3 p-5">
             <Logo compact={collapsed} />
-            <button className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white" onClick={() => setCollapsed((value) => !value)}>
+            <button className="rounded-lg p-2 text-[#c0d6df] hover:bg-[#4f6d7a]/30 hover:text-[#e8dab2]" onClick={() => setCollapsed((value) => !value)}>
               <PanelLeft className="h-5 w-5" />
             </button>
           </div>
@@ -94,17 +93,17 @@ export default function AppLayout({ role }) {
                 key={label}
                 to={href}
                 className={({ isActive }) =>
-                  `group relative flex items-center gap-3 overflow-hidden rounded-2xl px-4 py-3 text-sm font-bold transition ${
+                  `group relative flex items-center gap-3 overflow-hidden rounded-lg px-4 py-3 text-sm font-bold transition ${
                     isActiveLink(href, isActive)
-                      ? "bg-indigo-500/15 text-white shadow-[0_0_28px_rgba(99,102,241,0.18)]"
-                      : "text-slate-400 hover:bg-white/[0.05] hover:text-white"
+                      ? "bg-[#4f6d7a]/35 text-[#e8dab2]"
+                      : "text-[#c0d6df] hover:bg-white/[0.05] hover:text-[#e8dab2]"
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
                     {isActiveLink(href, isActive) && (
-                      <motion.span layoutId={`${role}-nav`} className="absolute left-0 top-2 h-8 w-1 rounded-full bg-cyan-300 shadow-[0_0_22px_rgba(6,182,212,0.75)]" />
+                      <span className="absolute left-0 top-2 h-8 w-1 rounded-r-full bg-[#e8dab2]" />
                     )}
                     <Icon className="relative h-5 w-5" />
                     {!collapsed && <span className="relative">{label}</span>}
@@ -115,9 +114,9 @@ export default function AppLayout({ role }) {
           </nav>
 
           <div className="p-4">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+            <div className="rounded-xl border border-white/10 bg-[#1a1d1f]/70 p-4">
               <div className="flex items-center gap-3">
-                <div className="relative grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-400 font-black text-white">
+                <div className="relative grid h-11 w-11 place-items-center rounded-lg bg-[#4f6d7a] font-black text-white">
                   {initials(user?.name)}
                   <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-slate-950 bg-emerald-400" />
                 </div>
@@ -129,7 +128,7 @@ export default function AppLayout({ role }) {
                 )}
               </div>
               {!collapsed && (
-                <button onClick={logout} className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-bold text-slate-300 hover:border-rose-400/40 hover:text-rose-100">
+                <button onClick={logout} className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-bold text-slate-300 hover:border-rose-400/40 hover:text-rose-100">
                   <LogOut className="h-4 w-4" />
                   Sign out
                 </button>
@@ -139,35 +138,35 @@ export default function AppLayout({ role }) {
         </aside>
 
         <div className="min-w-0 flex flex-1 flex-col overflow-hidden">
-          <header className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/45 px-5 py-4 backdrop-blur-2xl lg:px-8">
+          <header className="sticky top-0 z-30 border-b border-white/10 bg-[#1a1d1f]/95 px-5 py-4 backdrop-blur lg:px-8">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-slate-500">Talent Talk</p>
-                <h1 className="text-lg font-black text-white sm:text-2xl">Good to see you, <span className="gradient-text">{user?.name}</span></h1>
+                <p className="text-sm font-semibold text-[#c0d6df]/70">{role} workspace</p>
+                <h1 className="text-lg font-black text-white sm:text-2xl">Good to see you, <span className="text-[#e8dab2]">{user?.name}</span></h1>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   aria-label="Toggle payment notifications"
-                  className="relative rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-slate-300 hover:text-white"
+                  className="relative rounded-full border border-white/10 bg-[#2c3539] p-3 text-[#e8dab2] hover:bg-[#4f6d7a]"
                   onClick={() => setNotificationsOpen((value) => !value)}
                 >
                   <Bell className="h-5 w-5" />
                   {successfulPayments.length > 0 && (
-                    <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_14px_rgba(6,182,212,0.8)]" />
+                    <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#d4af37]" />
                   )}
                 </button>
                 {notificationsOpen && (
-                  <div className="absolute right-20 top-20 z-50 w-80 rounded-3xl border border-white/10 bg-slate-950/95 p-4 shadow-2xl backdrop-blur-2xl">
+                  <div className="absolute right-20 top-20 z-50 w-80 rounded-xl border border-white/10 bg-[#20272a] p-4 shadow-2xl">
                     <p className="font-black text-white">Payment notifications</p>
                     {role === "STUDENT" && successfulPayments.length ? (
                       <div className="mt-3 space-y-2">
                         {successfulPayments.slice(0, 4).map((payment) => (
-                          <div key={pick(payment, ["id"])} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                          <div key={pick(payment, ["id"])} className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
                             <p className="font-bold text-white">{formatCurrency(pick(payment, ["amount"], 0))} received</p>
                             <p className="text-xs text-slate-400">From {pick(payment, ["companyName"], "Company")} for {pick(payment, ["jobTitle"], "work")}</p>
                           </div>
                         ))}
-                        <Link to="/student/payments" onClick={() => setNotificationsOpen(false)} className="block rounded-2xl border border-cyan-300/30 px-3 py-2 text-center text-sm font-bold text-cyan-100">
+                        <Link to="/student/payments" onClick={() => setNotificationsOpen(false)} className="block rounded-lg border border-[#e8dab2]/30 px-3 py-2 text-center text-sm font-bold text-[#e8dab2]">
                           Open payments
                         </Link>
                       </div>
@@ -176,7 +175,7 @@ export default function AppLayout({ role }) {
                     )}
                   </div>
                 )}
-                <Link to={profilePath} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-slate-300 hover:text-white" aria-label="Open profile settings">
+                <Link to={profilePath} className="rounded-full border border-white/10 bg-[#2c3539] p-3 text-[#e8dab2] hover:bg-[#4f6d7a]" aria-label="Open profile settings">
                   <Settings className="h-5 w-5" />
                 </Link>
               </div>
@@ -187,10 +186,10 @@ export default function AppLayout({ role }) {
           </div>
         </div>
       </div>
-      <div className="fixed bottom-4 left-4 right-4 z-40 rounded-3xl border border-white/10 bg-slate-950/85 p-2 backdrop-blur-2xl lg:hidden">
+      <div className="fixed bottom-4 left-4 right-4 z-40 rounded-xl border border-white/10 bg-[#1a1d1f]/95 p-2 backdrop-blur lg:hidden">
         <div className="flex gap-2 overflow-x-auto">
           {links.map(([label, href, Icon]) => (
-            <NavLink key={label} to={href} className={({ isActive }) => `grid min-w-16 place-items-center rounded-2xl px-3 py-2.5 ${isActive ? "bg-indigo-500/20 text-cyan-100" : "text-slate-500"}`} title={label} aria-label={label}>
+            <NavLink key={label} to={href} className={({ isActive }) => `grid min-w-16 place-items-center rounded-lg px-3 py-2.5 ${isActive ? "bg-[#4f6d7a]/35 text-[#e8dab2]" : "text-[#c0d6df]/70"}`} title={label} aria-label={label}>
               <Icon className="h-5 w-5" />
               <span className="mt-1 max-w-14 truncate text-[10px] font-bold">{label}</span>
             </NavLink>

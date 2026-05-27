@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 "/auth/resend-verification",
                                 "/auth/forgot-password",
                                 "/auth/reset-password",
+                                "/auth/internal/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/swagger-ui.html",

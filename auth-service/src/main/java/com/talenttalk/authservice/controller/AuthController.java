@@ -12,6 +12,7 @@ import com.talenttalk.authservice.util.JwtUtil;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -288,5 +289,18 @@ public class AuthController {
         response.put("userId", jwtUtil.extractUserId(token).toString());
 
         return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/internal/users/{userId}")
+    public ResponseEntity<String> deleteUser(
+            @PathVariable Long userId,
+            @RequestHeader(value = "X-Internal-Service", required = false)
+            String internalService) {
+        if (!"ADMIN-SERVICE".equals(internalService)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Forbidden");
+        }
+        userRepository.findById(userId).ifPresent(userRepository::delete);
+        return ResponseEntity.ok("User deleted successfully");
     }
 }

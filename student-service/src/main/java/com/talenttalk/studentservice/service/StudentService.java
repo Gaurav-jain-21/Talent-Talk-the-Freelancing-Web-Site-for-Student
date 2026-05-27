@@ -106,7 +106,10 @@ public class StudentService {
     @Transactional
     public void deleteProfile(Long userId) {
         StudentProfile profile = studentProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+                .orElse(null);
+        if (profile == null) {
+            return;
+        }
         projectRepository.deleteByStudentId(profile.getId());
         studentProfileRepository.delete(profile);
     }

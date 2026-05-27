@@ -1,6 +1,7 @@
 package com.talenttalk.adminservice.service;
 
 import com.talenttalk.adminservice.client.CompanyClient;
+import com.talenttalk.adminservice.client.AuthClient;
 import com.talenttalk.adminservice.client.JobClient;
 import com.talenttalk.adminservice.client.PaymentClient;
 import com.talenttalk.adminservice.client.StudentClient;
@@ -29,6 +30,9 @@ public class AdminService {
 
     @Autowired
     private CompanyClient companyClient;
+
+    @Autowired
+    private AuthClient authClient;
 
     public List<Object> getAllStudents(){
         return studentClient.getAllStudent();
@@ -95,19 +99,29 @@ public class AdminService {
     }
 
     public String deleteStudent(Long userId) {
-        jobClient.deleteApplicationsByStudent(userId);
-        studentClient.deleteStudent(userId);
+        runCleanup("student applications", userId, () -> jobClient.deleteApplicationsByStudent(userId));
+        runCleanup("student profile", userId, () -> studentClient.deleteStudent(userId));
+        runCleanup("auth user", userId, () -> authClient.deleteUser(userId, "ADMIN-SERVICE"));
         return "Student deleted successfully";
     }
 
     public String deleteCompany(Long userId) {
-        jobClient.deleteJobsByCompany(userId);
-        companyClient.deleteCompany(userId);
+        runCleanup("company jobs", userId, () -> jobClient.deleteJobsByCompany(userId));
+        runCleanup("company profile", userId, () -> companyClient.deleteCompany(userId));
+        runCleanup("auth user", userId, () -> authClient.deleteUser(userId, "ADMIN-SERVICE"));
         return "Company deleted successfully";
     }
 
     public Object closeJob(Long jobId) {
         return jobClient.closeJob(jobId);
+    }
+
+    private void runCleanup(String target, Long userId, Runnable cleanup) {
+        try {
+            cleanup.run();
+        } catch (FeignException.NotFound | FeignException.BadRequest e) {
+            log.info("Skipping {} cleanup for user {} because it was already absent: {}", target, userId, e.getMessage());
+        }
     }
 
 }

@@ -73,7 +73,10 @@ public class CompanyService {
 
     public void deleteProfile(Long userId) {
         CompanyProfile profile = companyProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Profile not found"));
+                .orElse(null);
+        if (profile == null) {
+            return;
+        }
         companyProfileRepository.delete(profile);
     }
 

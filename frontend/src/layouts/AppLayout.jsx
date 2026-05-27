@@ -53,6 +53,7 @@ const nav = {
     ["Companies", "/admin/companies", Building2],
     ["Jobs", "/admin/jobs", BriefcaseBusiness],
     ["Payments", "/admin/payments", CreditCard],
+    ["Profile", "/admin/profile", UserRound],
   ],
 };
 
@@ -60,8 +61,10 @@ export default function AppLayout({ role }) {
   const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const location = useLocation();
   const links = nav[role] || [];
+  const profileLink = links.find(([label]) => label === "Profile")?.[1];
   const paymentNotifications = useAsync(
     () => (role === "STUDENT" && user?.userId ? paymentApi.student(user.userId) : Promise.resolve([])),
     [role, user?.userId],
@@ -173,9 +176,33 @@ export default function AppLayout({ role }) {
                     )}
                   </div>
                 )}
-                <button className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-slate-300 hover:text-white">
+                <button
+                  className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-slate-300 hover:text-white"
+                  onClick={() => setSettingsOpen((value) => !value)}
+                >
                   <Settings className="h-5 w-5" />
                 </button>
+                {settingsOpen && (
+                  <div className="absolute right-5 top-20 z-50 w-56 rounded-xl border border-white/10 bg-[#2c3539]/95 p-2 shadow-2xl backdrop-blur-2xl">
+                    {profileLink && (
+                      <Link
+                        to={profileLink}
+                        onClick={() => setSettingsOpen(false)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-bold text-[#e8dab2] transition hover:bg-[#4f6d7a]/35"
+                      >
+                        <UserRound className="h-4 w-4" />
+                        Profile
+                      </Link>
+                    )}
+                    <button
+                      onClick={logout}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-bold text-rose-100 transition hover:bg-rose-500/10"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </header>

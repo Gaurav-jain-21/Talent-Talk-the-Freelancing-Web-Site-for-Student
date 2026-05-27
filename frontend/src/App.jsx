@@ -31,6 +31,7 @@ import ManageStudents from "./pages/admin/ManageStudents";
 import ManageJobs from "./pages/admin/ManageJobs";
 import ManageCompanies from "./pages/admin/ManageCompanies";
 import ManagePayments from "./pages/admin/ManagePayments";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 export default function App() {
   return (
@@ -82,6 +83,7 @@ export default function App() {
               <Route path="/admin/companies" element={<ManageCompanies />} />
               <Route path="/admin/jobs" element={<ManageJobs />} />
               <Route path="/admin/payments" element={<ManagePayments />} />
+              <Route path="/admin/profile" element={<AdminProfile />} />
             </Route>
           </Route>
 

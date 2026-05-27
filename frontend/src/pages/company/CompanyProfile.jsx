@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Building2, KeyRound, Save } from "lucide-react";
+import { Building2, KeyRound, LogOut, Save } from "lucide-react";
 import { authApi, companyApi } from "../../api/services";
 import {
   Field,
@@ -30,7 +30,7 @@ const emptyProfile = {
 };
 
 export default function CompanyProfile() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const profileQuery = useAsync(() => companyApi.profile(user.userId), [user.userId], { toast: false });
   const [draft, setDraft] = useState(emptyProfile);
   const [passwords, setPasswords] = useState({
@@ -154,9 +154,14 @@ export default function CompanyProfile() {
               <p className="mt-1 text-sm text-slate-400">{draft.industry || "Add your company details"}</p>
             </div>
           </div>
-          <GradientButton loading={saving} onClick={saveProfile}>
-            <Save className="h-4 w-4" /> Save Profile
-          </GradientButton>
+          <div className="flex flex-wrap gap-2">
+            <GradientButton loading={saving} onClick={saveProfile}>
+              <Save className="h-4 w-4" /> Save Profile
+            </GradientButton>
+            <GhostButton className="border-rose-400/25 text-rose-100" onClick={logout}>
+              <LogOut className="h-4 w-4" /> Logout
+            </GhostButton>
+          </div>
         </div>
       </section>
 

@@ -133,12 +133,22 @@ export const studentApi = {
 export const companyApi = {
   jobs: (userId) => data(api.get(`/company/${userId}/jobs`)),
   applicants: (jobId) => data(api.get(`/company/jobs/${jobId}/applicants`)),
-  updateApplicationStatus: (applicationId, payload) =>
-    data(
-      api.patch(`/company/application/${applicationId}/status`, null, {
-        params: { status: payload.status || payload },
-      }),
-    ),
+  updateApplicationStatus: async (applicationId, payload) => {
+    const status = payload.status || payload;
+    try {
+      return await data(
+        api.patch(`/company/application/${applicationId}/status`, null, {
+          params: { status },
+        }),
+      );
+    } catch (error) {
+      return data(
+        api.post(`/job/application/${applicationId}/status`, null, {
+          params: { status },
+        }),
+      );
+    }
+  },
   updateWorkStatus: (applicationId, workStatus) =>
     data(
       api.post(`/company/application/${applicationId}/work-status`, null, {

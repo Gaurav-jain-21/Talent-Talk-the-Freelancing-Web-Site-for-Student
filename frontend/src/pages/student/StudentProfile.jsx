@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileUp, FolderGit2, Save, Plus, X, Eye } from "lucide-react";
+import { FileUp, FolderGit2, Save, Plus, X, Eye, LogOut } from "lucide-react";
 import toast from "react-hot-toast";
 import { studentApi } from "../../api/services";
 import {
@@ -19,7 +19,7 @@ import { asArray, errorMessage, initials, pick } from "../../utils/format";
 import { useAsync } from "../../utils/useAsync";
 
 export default function StudentProfile() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const profileQuery = useAsync(
     () => studentApi.profile(user.userId),
     [user.userId],
@@ -197,25 +197,30 @@ export default function StudentProfile() {
               </Badge>
             </div>
           </div>
-          {edit ? (
-            <GradientButton onClick={save}>
-              <Save className="h-4 w-4" /> Save
-            </GradientButton>
-          ) : (
-            <GhostButton
-              onClick={() => {
-                setDraft({
-                  userId: user.userId,
-                  fullName: user.name,
-                  email: user.email,
-                  ...profile,
-                });
-                setEdit(true);
-              }}
-            >
-              Edit Profile
+          <div className="flex flex-wrap gap-2">
+            {edit ? (
+              <GradientButton onClick={save}>
+                <Save className="h-4 w-4" /> Save
+              </GradientButton>
+            ) : (
+              <GhostButton
+                onClick={() => {
+                  setDraft({
+                    userId: user.userId,
+                    fullName: user.name,
+                    email: user.email,
+                    ...profile,
+                  });
+                  setEdit(true);
+                }}
+              >
+                Edit Profile
+              </GhostButton>
+            )}
+            <GhostButton className="border-rose-400/25 text-rose-100" onClick={logout}>
+              <LogOut className="h-4 w-4" /> Logout
             </GhostButton>
-          )}
+          </div>
         </div>
       </section>
 

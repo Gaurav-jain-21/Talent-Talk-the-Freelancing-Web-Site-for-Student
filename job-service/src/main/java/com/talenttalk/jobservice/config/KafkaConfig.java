@@ -33,6 +33,10 @@ public class KafkaConfig {
         // to avoid deprecated import issue
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
                 "org.springframework.kafka.support.serializer.JsonSerializer");
+        config.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 1000);
+        config.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 1000);
+        config.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, 3000);
+        config.put(ProducerConfig.RETRIES_CONFIG, 0);
 
         return new DefaultKafkaProducerFactory<>(config);
     }

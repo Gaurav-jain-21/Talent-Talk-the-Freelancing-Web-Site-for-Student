@@ -196,7 +196,11 @@ public class JobService {
                     status.name()
             );
 
-            statusProducer.publishStatusChanged(event);
+            try {
+                statusProducer.publishStatusChanged(event);
+            } catch (Exception ignored) {
+                // Status updates must not fail just because notification delivery is unavailable.
+            }
         }
 
         return saved;

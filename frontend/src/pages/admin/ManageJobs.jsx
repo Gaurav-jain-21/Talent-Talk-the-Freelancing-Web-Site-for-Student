@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { BriefcaseBusiness, Trash2 } from "lucide-react";
 import { adminApi } from "../../api/services";
@@ -69,14 +68,12 @@ export default function ManageJobs() {
       ) : (
         <EmptyState icon={BriefcaseBusiness} title="No jobs found" message="Jobs from the database appear here." />
       )}
-      <AnimatePresence>
-        {target && (
-          <Modal title="Delete job?" onClose={() => setTarget(null)}>
-            <p className="text-slate-400">This deletes the job completely from the job database.</p>
-            <div className="mt-6 flex justify-end gap-3"><GhostButton onClick={() => setTarget(null)}>Cancel</GhostButton><GradientButton onClick={removeJob}>Delete</GradientButton></div>
-          </Modal>
-        )}
-      </AnimatePresence>
+      {target && (
+        <Modal title="Delete job?" onClose={() => setTarget(null)}>
+          <p className="text-slate-400">This deletes the job completely from the job database.</p>
+          <div className="mt-6 flex justify-end gap-3"><GhostButton onClick={() => setTarget(null)}>Cancel</GhostButton><GradientButton onClick={removeJob}>Delete</GradientButton></div>
+        </Modal>
+      )}
     </Page>
   );
 }

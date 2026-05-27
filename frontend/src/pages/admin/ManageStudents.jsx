@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { Trash2, Users } from "lucide-react";
 import { adminApi } from "../../api/services";
@@ -55,14 +54,12 @@ export default function ManageStudents() {
       ) : (
         <EmptyState icon={Users} title="No students found" message="The admin API returned no matching students." />
       )}
-      <AnimatePresence>
-        {target && (
-          <Modal title="Delete student?" onClose={() => setTarget(null)}>
-            <p className="text-slate-400">This deletes the student profile and related projects from the database.</p>
-            <div className="mt-6 flex justify-end gap-3"><GhostButton onClick={() => setTarget(null)}>Cancel</GhostButton><GradientButton onClick={removeStudent}>Delete</GradientButton></div>
-          </Modal>
-        )}
-      </AnimatePresence>
+      {target && (
+        <Modal title="Delete student?" onClose={() => setTarget(null)}>
+          <p className="text-slate-400">This deletes the student profile and related projects from the database.</p>
+          <div className="mt-6 flex justify-end gap-3"><GhostButton onClick={() => setTarget(null)}>Cancel</GhostButton><GradientButton onClick={removeStudent}>Delete</GradientButton></div>
+        </Modal>
+      )}
     </Page>
   );
 }

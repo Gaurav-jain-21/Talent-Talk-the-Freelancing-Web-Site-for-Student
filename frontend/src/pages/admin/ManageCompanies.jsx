@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { Building2, Trash2 } from "lucide-react";
 import { adminApi } from "../../api/services";
@@ -55,14 +54,12 @@ export default function ManageCompanies() {
       ) : (
         <EmptyState icon={Building2} title="No companies found" message="Company profiles from the database appear here." />
       )}
-      <AnimatePresence>
-        {target && (
-          <Modal title="Delete company?" onClose={() => setTarget(null)}>
-            <p className="text-slate-400">This deletes the company profile from the database.</p>
-            <div className="mt-6 flex justify-end gap-3"><GhostButton onClick={() => setTarget(null)}>Cancel</GhostButton><GradientButton onClick={removeCompany}>Delete</GradientButton></div>
-          </Modal>
-        )}
-      </AnimatePresence>
+      {target && (
+        <Modal title="Delete company?" onClose={() => setTarget(null)}>
+          <p className="text-slate-400">This deletes the company profile from the database.</p>
+          <div className="mt-6 flex justify-end gap-3"><GhostButton onClick={() => setTarget(null)}>Cancel</GhostButton><GradientButton onClick={removeCompany}>Delete</GradientButton></div>
+        </Modal>
+      )}
     </Page>
   );
 }

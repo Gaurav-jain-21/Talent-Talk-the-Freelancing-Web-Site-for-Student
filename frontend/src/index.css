@@ -2,6 +2,13 @@
 
 :root {
   color-scheme: dark;
+  --pearl-beige: #e8dab2;
+  --blue-slate: #4f6d7a;
+  --pale-sky: #c0d6df;
+  --alabaster-grey: #eaeaea;
+  --charcoal: #2c3539;
+  --dark-bg: #1a1d1f;
+  --accent-gold: #d4af37;
   font-family:
     Inter,
     ui-sans-serif,
@@ -10,8 +17,8 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  background: #0f172a;
-  color: #f8fafc;
+  background: var(--dark-bg);
+  color: var(--alabaster-grey);
 }
 
 * {
@@ -27,7 +34,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overflow-x: hidden;
-  background: #0f172a;
+  background: var(--dark-bg);
 }
 
 button,
@@ -47,8 +54,8 @@ textarea:disabled {
 }
 
 ::selection {
-  background: rgba(6, 182, 212, 0.35);
-  color: white;
+  background: rgba(212, 175, 55, 0.35);
+  color: var(--pearl-beige);
 }
 
 ::-webkit-scrollbar {
@@ -57,76 +64,60 @@ textarea:disabled {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: var(--charcoal);
 }
 
 ::-webkit-scrollbar-thumb {
-  border-radius: 99px;
-  background: linear-gradient(180deg, #6366f1, #06b6d4);
+  border-radius: 5px;
+  background: var(--blue-slate);
 }
 
 .mesh-bg {
-  background:
-    radial-gradient(
-      circle at 15% 15%,
-      rgba(99, 102, 241, 0.32),
-      transparent 26rem
-    ),
-    radial-gradient(
-      circle at 82% 18%,
-      rgba(6, 182, 212, 0.18),
-      transparent 28rem
-    ),
-    radial-gradient(
-      circle at 45% 82%,
-      rgba(139, 92, 246, 0.24),
-      transparent 30rem
-    ),
-    linear-gradient(135deg, #020617 0%, #0f172a 45%, #160d2f 100%);
+  background: linear-gradient(135deg, var(--dark-bg) 0%, #202629 56%, #151719 100%);
 }
 
 .mesh-bg::before {
   content: "";
   position: absolute;
-  inset: -35%;
-  background: conic-gradient(
-    from 120deg at 50% 50%,
-    rgba(99, 102, 241, 0.16),
-    rgba(139, 92, 246, 0.11),
-    rgba(6, 182, 212, 0.13),
-    rgba(99, 102, 241, 0.16)
-  );
-  filter: blur(80px);
-  animation: mesh-drift 18s ease-in-out infinite alternate;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(192, 214, 223, 0.035) 1px, transparent 1px),
+    linear-gradient(rgba(192, 214, 223, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
 .glass-card {
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 2rem;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.075),
-      rgba(255, 255, 255, 0.032)
-    ),
-    rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(192, 214, 223, 0.12);
+  border-radius: 12px;
+  background: rgba(44, 53, 57, 0.62);
   box-shadow:
-    0 24px 80px rgba(0, 0, 0, 0.28),
+    0 16px 44px rgba(0, 0, 0, 0.26),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(24px);
-  transform-style: preserve-3d;
+  backdrop-filter: blur(14px);
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.lift-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(232, 218, 178, 0.28);
+  background: rgba(44, 53, 57, 0.78);
 }
 
 .gradient-border {
   background:
-    linear-gradient(#0f172a, #0f172a) padding-box,
-    linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4) border-box;
+    linear-gradient(var(--dark-bg), var(--dark-bg)) padding-box,
+    linear-gradient(135deg, var(--blue-slate), var(--pearl-beige), var(--accent-gold)) border-box;
   border: 1px solid transparent;
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #818cf8, #c084fc 48%, #22d3ee);
+  background: linear-gradient(135deg, var(--pearl-beige), #f5edd4 52%, var(--accent-gold));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -137,8 +128,9 @@ textarea:disabled {
   width: 0.42rem;
   height: 0.42rem;
   border-radius: 999px;
-  background: rgba(125, 211, 252, 0.75);
-  box-shadow: 0 0 24px rgba(6, 182, 212, 0.7);
+  background: rgba(232, 218, 178, 0.72);
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.48);
+  animation: particle-drift 6s ease-in-out infinite;
 }
 
 .tilt-card {
@@ -181,17 +173,17 @@ textarea:disabled {
 .floating-field input,
 .floating-field textarea {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.045);
-  color: white;
+  border: 2px solid rgba(79, 109, 122, 0.3);
+  border-radius: 12px;
+  background: rgba(44, 53, 57, 0.72);
+  color: var(--pearl-beige);
   outline: none;
   padding: 1.15rem 1rem 0.65rem;
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
     background 160ms ease;
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(10px);
 }
 
 .floating-field textarea {
@@ -201,11 +193,9 @@ textarea:disabled {
 
 .floating-field input:focus,
 .floating-field textarea:focus {
-  border-color: rgba(6, 182, 212, 0.6);
-  background: rgba(255, 255, 255, 0.065);
-  box-shadow:
-    0 0 0 4px rgba(6, 182, 212, 0.08),
-    0 0 26px rgba(6, 182, 212, 0.16);
+  border-color: rgba(232, 218, 178, 0.7);
+  background: rgba(44, 53, 57, 0.95);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
 }
 
 .floating-field input:disabled,
@@ -217,7 +207,7 @@ textarea:disabled {
   position: absolute;
   left: 1rem;
   top: 0.95rem;
-  color: rgb(148, 163, 184);
+  color: var(--pale-sky);
   font-size: 0.9rem;
   pointer-events: none;
   transition:
@@ -232,14 +222,14 @@ textarea:disabled {
 .floating-field textarea:not(:placeholder-shown) ~ span {
   top: 0.38rem;
   font-size: 0.68rem;
-  color: rgb(103, 232, 249);
+  color: var(--pearl-beige);
 }
 
 .skeleton {
   position: relative;
   overflow: hidden;
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(192, 214, 223, 0.09);
 }
 
 .skeleton::after {
@@ -257,15 +247,15 @@ textarea:disabled {
 }
 
 .glow-indigo {
-  box-shadow: 0 0 34px rgba(99, 102, 241, 0.18);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.24);
 }
 
 .glow-purple {
-  box-shadow: 0 0 34px rgba(139, 92, 246, 0.18);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.24);
 }
 
 .glow-cyan {
-  box-shadow: 0 0 34px rgba(6, 182, 212, 0.18);
+  box-shadow: 0 12px 36px rgba(79, 109, 122, 0.16);
 }
 
 .glow-green {
@@ -291,6 +281,19 @@ textarea:disabled {
 
   to {
     transform: rotate(18deg) scale(1.12);
+  }
+}
+
+@keyframes particle-drift {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    opacity: 0.55;
+    transform: translate3d(10px, -24px, 0);
   }
 }
 

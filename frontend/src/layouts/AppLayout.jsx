@@ -60,6 +60,7 @@ const nav = {
 export default function AppLayout({ role }) {
   const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const location = useLocation();
@@ -81,10 +82,20 @@ export default function AppLayout({ role }) {
   return (
     <MeshBackground>
       <div className="flex h-screen overflow-hidden">
-        <aside className={`hidden h-screen shrink-0 border-r border-white/10 bg-[#1a1d1f]/95 backdrop-blur-2xl transition-all lg:flex lg:flex-col ${collapsed ? "w-24" : "w-72"}`}>
+        {mobileNavOpen && (
+          <button
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+            aria-label="Close navigation"
+            onClick={() => setMobileNavOpen(false)}
+          />
+        )}
+        <aside className={`fixed inset-y-0 left-0 z-50 flex h-screen w-72 shrink-0 -translate-x-full flex-col border-r border-white/10 bg-[#1a1d1f]/95 backdrop-blur-2xl transition-transform duration-200 lg:static lg:translate-x-0 ${mobileNavOpen ? "translate-x-0" : ""} ${collapsed ? "lg:w-24" : "lg:w-72"}`}>
           <div className="flex items-center justify-between gap-3 p-6">
             <Logo compact={collapsed} />
-            <button className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white" onClick={() => setCollapsed((value) => !value)}>
+            <button className="hidden rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white lg:grid" onClick={() => setCollapsed((value) => !value)}>
+              <PanelLeft className="h-5 w-5" />
+            </button>
+            <button className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white lg:hidden" onClick={() => setMobileNavOpen(false)}>
               <PanelLeft className="h-5 w-5" />
             </button>
           </div>
@@ -94,6 +105,7 @@ export default function AppLayout({ role }) {
               <NavLink
                 key={label}
                 to={href}
+                onClick={() => setMobileNavOpen(false)}
                 className={({ isActive }) =>
                   `group relative flex items-center gap-3 overflow-hidden rounded-2xl px-4 py-3 text-sm font-bold transition ${
                     isActiveLink(href, isActive)
@@ -142,9 +154,14 @@ export default function AppLayout({ role }) {
         <div className="min-w-0 flex flex-1 flex-col overflow-hidden">
           <header className="sticky top-0 z-30 border-b border-[#c0d6df]/10 bg-[#1a1d1f]/95 px-5 py-4 backdrop-blur-2xl lg:px-8">
             <div className="flex items-center justify-between gap-4">
-              <div>
+              <div className="flex min-w-0 items-center gap-3">
+                <button className="rounded-xl border border-white/10 bg-white/[0.04] p-2 text-slate-300 hover:text-white lg:hidden" onClick={() => setMobileNavOpen(true)}>
+                  <PanelLeft className="h-5 w-5" />
+                </button>
+                <div className="min-w-0">
                 <p className="text-sm font-semibold text-slate-500">Talent Talk</p>
                 <h1 className="text-lg font-black text-white sm:text-2xl">Good to see you, <span className="gradient-text">{user?.name}</span></h1>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -210,13 +227,6 @@ export default function AppLayout({ role }) {
             <Outlet />
           </div>
         </div>
-      </div>
-      <div className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 gap-1 border-t border-[#c0d6df]/10 bg-[#1a1d1f]/95 p-2 backdrop-blur-2xl lg:hidden">
-        {links.slice(0, 5).map(([label, href, Icon]) => (
-          <NavLink key={label} to={href} className={({ isActive }) => `grid place-items-center rounded-lg p-3 ${isActive ? "text-[#e8dab2]" : "text-[#c0d6df]"}`} title={label}>
-            <Icon className="h-5 w-5" />
-          </NavLink>
-        ))}
       </div>
     </MeshBackground>
   );

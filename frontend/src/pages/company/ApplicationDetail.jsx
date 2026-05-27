@@ -14,6 +14,7 @@ import {
   StatusBadge,
 } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
+import ResumePreviewModal from "../../components/ResumePreviewModal";
 import { useAuth } from "../../context/useAuth";
 import { loadCompanyApplicationGroups, flattenCompanyApplications } from "../../utils/companyApplications";
 import { asArray, errorMessage, formatDate, initials, pick } from "../../utils/format";
@@ -23,6 +24,7 @@ export default function ApplicationDetail() {
   const { user } = useAuth();
   const { applicationId } = useParams();
   const [deadline, setDeadline] = useState("");
+  const [showResumeModal, setShowResumeModal] = useState(false);
   const applicationsQuery = useAsync(() => loadCompanyApplicationGroups(user.userId), [user.userId]);
   const match = flattenCompanyApplications(applicationsQuery.data || []).find(
     (item) => String(item.applicationId) === String(applicationId),
@@ -123,9 +125,9 @@ export default function ApplicationDetail() {
           </div>
           <div className="flex flex-wrap gap-2">
             {resumeUrl ? (
-              <a href={resumeUrl} target="_blank" rel="noreferrer">
-                <GhostButton><FileText className="h-4 w-4" /> Resume</GhostButton>
-              </a>
+              <GhostButton onClick={() => setShowResumeModal(true)}>
+                <FileText className="h-4 w-4" /> Resume
+              </GhostButton>
             ) : (
               <GhostButton disabled><FileText className="h-4 w-4" /> No Resume</GhostButton>
             )}
@@ -205,6 +207,12 @@ export default function ApplicationDetail() {
           </div>
         </GlassCard>
       </div>
+      {showResumeModal && (
+        <ResumePreviewModal
+          resumeUrl={resumeUrl}
+          onClose={() => setShowResumeModal(false)}
+        />
+      )}
     </Page>
   );
 }

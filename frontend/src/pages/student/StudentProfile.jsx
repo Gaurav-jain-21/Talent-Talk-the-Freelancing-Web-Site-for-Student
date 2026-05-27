@@ -13,6 +13,7 @@ import {
   TextArea,
 } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
+import ResumePreviewModal from "../../components/ResumePreviewModal";
 import { useAuth } from "../../context/useAuth";
 import { asArray, errorMessage, initials, pick } from "../../utils/format";
 import { useAsync } from "../../utils/useAsync";
@@ -52,12 +53,49 @@ export default function StudentProfile() {
     setDraft((current) => ({ ...profile, ...current, [key]: nextValue }));
   }
 
+  function defaultProfilePayload() {
+    const fullName = String(user.name || "").trim();
+    return {
+      userId: user.userId,
+      fullName: fullName.length >= 2 ? fullName : "Student",
+      email: user.email || "",
+      college: "",
+      degree: "",
+      graduationYear: new Date().getFullYear(),
+      bio: "",
+      skills: "",
+      workStatus: "AVAILABLE",
+    };
+  }
+
+  async function ensureProfileExists() {
+    if (profile?.id) return profile;
+    if (!user.email) {
+      throw new Error("Please save your profile with an email before uploading a resume.");
+    }
+
+    try {
+      const created = await studentApi.createProfile({
+        ...defaultProfilePayload(),
+        ...profile,
+        ...draft,
+      });
+      profileQuery.setData(created);
+      return created;
+    } catch (error) {
+      if (errorMessage(error).toLowerCase().includes("already exists")) {
+        const existing = await studentApi.profile(user.userId);
+        profileQuery.setData(existing);
+        return existing;
+      }
+      throw error;
+    }
+  }
+
   async function save() {
     try {
       const payload = {
-        userId: user.userId,
-        fullName: user.name,
-        email: user.email,
+        ...defaultProfilePayload(),
         ...profile,
         ...draft,
       };
@@ -80,6 +118,7 @@ export default function StudentProfile() {
     const formData = new FormData();
     formData.append("resume", file);
     try {
+      await ensureProfileExists();
       await studentApi.uploadResume(user.userId, formData);
       toast.success("Resume uploaded");
       profileQuery.refresh();
@@ -252,14 +291,12 @@ export default function StudentProfile() {
               <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4">
                 <p className="text-sm text-emerald-100">✓ Resume uploaded</p>
               </div>
-              <button
-                onClick={() => setShowResumeModal(true)}
+              <GhostButton
                 className="w-full"
+                onClick={() => setShowResumeModal(true)}
               >
-                <GhostButton className="w-full">
-                  <Eye className="h-4 w-4" /> View Resume
-                </GhostButton>
-              </button>
+                <Eye className="h-4 w-4" /> View Resume
+              </GhostButton>
               {edit && (
                 <label className="block">
                   <GhostButton className="w-full">
@@ -406,37 +443,11 @@ export default function StudentProfile() {
         </GlassCard>
       )}
 
-      {showResumeModal && resumeUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur"
-          onClick={() => setShowResumeModal(false)}
-        >
-          <GlassCard
-            hover={false}
-            className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden p-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-white/10 p-6">
-              <h3 className="text-xl font-black text-white">Resume Preview</h3>
-              <button
-                onClick={() => setShowResumeModal(false)}
-                className="text-slate-400 hover:text-white"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div
-              className="overflow-y-auto"
-              style={{ maxHeight: "calc(90vh - 80px)" }}
-            >
-              <iframe
-                src={resumeUrl}
-                className="h-[600px] w-full border-0"
-                title="Resume Preview"
-              />
-            </div>
-          </GlassCard>
-        </div>
+      {showResumeModal && (
+        <ResumePreviewModal
+          resumeUrl={resumeUrl}
+          onClose={() => setShowResumeModal(false)}
+        />
       )}
     </Page>
   );

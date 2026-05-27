@@ -24,10 +24,11 @@ export default function StudentDetail() {
   const [showResumeModal, setShowResumeModal] = useState(false);
   const { userId } = useParams();
   const profile = useAsync(() => companyApi.student(userId), [userId]);
-  const projects = useAsync(() => studentApi.projects(userId), [userId], {
+  const student = profile.data || {};
+  const projectOwnerId = pick(student, ["id"], userId);
+  const projects = useAsync(() => studentApi.projects(projectOwnerId), [projectOwnerId], {
     toast: false,
   });
-  const student = profile.data || {};
   const resumeUrl = pick(student, ["resumeUrl", "resume", "resumeLink"], "");
   const githubUrl = pick(student, ["githubUrl", "github", "githubLink"], "");
   const linkedinUrl = pick(

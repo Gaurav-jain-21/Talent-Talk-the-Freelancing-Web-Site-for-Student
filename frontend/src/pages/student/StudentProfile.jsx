@@ -25,12 +25,12 @@ export default function StudentProfile() {
     [user.userId],
     { toast: false },
   );
+  const profile = profileQuery.data || {};
   const projectsQuery = useAsync(
-    () => studentApi.projects(user.userId),
-    [user.userId],
+    () => studentApi.projects(profile?.id || user.userId),
+    [user.userId, profile?.id],
     { toast: false },
   );
-  const profile = profileQuery.data || {};
   const [edit, setEdit] = useState(false);
   const [draft, setDraft] = useState({});
   const [skill, setSkill] = useState("");
@@ -139,7 +139,15 @@ export default function StudentProfile() {
       return;
     }
     try {
-      await studentApi.addProject(user.userId, projectForm);
+      const currentProfile = await ensureProfileExists();
+      try {
+        await studentApi.addProject(user.userId, projectForm);
+      } catch (error) {
+        if (!currentProfile?.id || !errorMessage(error).toLowerCase().includes("student not found")) {
+          throw error;
+        }
+        await studentApi.addProject(currentProfile.id, projectForm);
+      }
       toast.success("Project added successfully");
       setProjectForm({
         title: "",

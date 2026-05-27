@@ -36,12 +36,13 @@ export default function ApplicationDetail() {
     [studentId],
     { toast: false },
   );
+  const student = studentQuery.data || {};
+  const projectOwnerId = pick(student, ["id"], studentId);
   const projectsQuery = useAsync(
-    () => (studentId ? studentApi.projects(studentId) : Promise.resolve([])),
-    [studentId],
+    () => (projectOwnerId ? studentApi.projects(projectOwnerId) : Promise.resolve([])),
+    [projectOwnerId],
     { toast: false },
   );
-  const student = studentQuery.data || {};
   const job = match?.job || {};
   const resumeUrl = pick(student, ["resumeUrl", "resume", "resumeLink"], "");
 
@@ -173,7 +174,28 @@ export default function ApplicationDetail() {
                 {asArray(projectsQuery.data).map((project) => (
                   <div key={pick(project, ["id", "title"])} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                     <p className="font-black text-white">{pick(project, ["title", "name"], "Project")}</p>
+                    {pick(project, ["techStack"], "") && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {asArray(pick(project, ["techStack"], "")).map((tech) => (
+                          <Badge key={tech} tone="indigo" className="text-xs">
+                            {tech}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                     <p className="mt-1 text-sm text-slate-400">{pick(project, ["description"], "")}</p>
+                    {pick(project, ["projectUrl"], "") && (
+                      <a
+                        href={pick(project, ["projectUrl"], "")}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-4 inline-block"
+                      >
+                        <GhostButton className="text-xs">
+                          <ExternalLink className="h-3 w-3" /> View Project
+                        </GhostButton>
+                      </a>
+                    )}
                   </div>
                 ))}
               </div>

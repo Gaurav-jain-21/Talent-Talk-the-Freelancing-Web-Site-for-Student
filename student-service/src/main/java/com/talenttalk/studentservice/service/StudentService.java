@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -110,16 +111,16 @@ public class StudentService {
         if (profile == null) {
             return;
         }
-        projectRepository.deleteByStudentId(profile.getId());
+        projectRepository.deleteByStudentIdIn(projectOwnerIds(profile));
         studentProfileRepository.delete(profile);
     }
 
-    public Project addProject(Long studentId, ProjectRequest request) {
-        studentProfileRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+    public Project addProject(Long userId, ProjectRequest request) {
+        StudentProfile profile = findProfileByUserIdOrProfileId(userId)
+                .orElseThrow(() -> new RuntimeException("Student profile not found. Please save your profile first."));
 
         Project project = new Project();
-        project.setStudentId(studentId);
+        project.setStudentId(profile.getUserId());
         project.setTitle(request.getTitle());
         project.setDescription(request.getDescription());
         project.setTechStack(request.getTechStack());
@@ -128,8 +129,27 @@ public class StudentService {
         return projectRepository.save(project);
     }
 
-    public List<Project> getProjectsByStudentId(Long studentId) {
-        return projectRepository.findByStudentId(studentId);
+    public List<Project> getProjectsByStudentId(Long userId) {
+        StudentProfile profile = findProfileByUserIdOrProfileId(userId)
+                .orElse(null);
+        if (profile == null) {
+            return List.of();
+        }
+        return projectRepository.findByStudentIdIn(projectOwnerIds(profile));
+    }
+
+    private List<Long> projectOwnerIds(StudentProfile profile) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(profile.getUserId());
+        if (!profile.getId().equals(profile.getUserId())) {
+            ids.add(profile.getId());
+        }
+        return ids;
+    }
+
+    private java.util.Optional<StudentProfile> findProfileByUserIdOrProfileId(Long id) {
+        return studentProfileRepository.findByUserId(id)
+                .or(() -> studentProfileRepository.findById(id));
     }
 
     @Autowired

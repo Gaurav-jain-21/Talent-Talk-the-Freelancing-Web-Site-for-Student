@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -302,5 +303,34 @@ public class AuthController {
         }
         userRepository.findById(userId).ifPresent(userRepository::delete);
         return ResponseEntity.ok("User deleted successfully");
+    }
+
+    @GetMapping("/internal/users")
+    public ResponseEntity<List<Map<String, Object>>> getUsersByRole(
+            @RequestParam String role,
+            @RequestHeader(value = "X-Internal-Service", required = false)
+            String internalService) {
+        if (!"ADMIN-SERVICE".equals(internalService)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<Map<String, Object>> users = userRepository.findAll()
+                .stream()
+                .filter(user -> user.getRole() != null
+                        && user.getRole().name().equalsIgnoreCase(role))
+                .map(user -> {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("id", user.getId());
+                    row.put("userId", user.getId());
+                    row.put("name", user.getName());
+                    row.put("email", user.getEmail());
+                    row.put("role", user.getRole().name());
+                    row.put("verified", user.isVerified());
+                    row.put("profileCompleted", false);
+                    return row;
+                })
+                .toList();
+
+        return ResponseEntity.ok(users);
     }
 }

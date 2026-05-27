@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { Building2, Trash2 } from "lucide-react";
 import { adminApi } from "../../api/services";
-import { EmptyState, GhostButton, GlassCard, GradientButton, Modal, SearchBox } from "../../components/ui/Primitives";
+import { Badge, EmptyState, GhostButton, GlassCard, GradientButton, Modal, SearchBox } from "../../components/ui/Primitives";
 import { Page } from "../../components/ui/Motion";
 import { asArray, errorMessage, formatDate, pick } from "../../utils/format";
 import { useAsync } from "../../utils/useAsync";
@@ -39,7 +39,13 @@ export default function ManageCompanies() {
               <tbody className="divide-y divide-white/10">
                 {filtered.map((company) => (
                   <tr key={pick(company, ["userId", "id"])} className="hover:bg-cyan-400/5">
-                    <td className="px-5 py-4"><p className="font-bold text-white">{pick(company, ["companyName", "name"], "Company")}</p><p className="text-sm text-slate-500">{pick(company, ["email"], "")}</p></td>
+                    <td className="px-5 py-4">
+                      <p className="font-bold text-white">{pick(company, ["companyName", "name"], "Company")}</p>
+                      <p className="text-sm text-slate-500">{pick(company, ["email"], "")}</p>
+                      {pick(company, ["profileCompleted"], false) !== true && (
+                        <Badge tone="yellow" className="mt-2">Profile pending</Badge>
+                      )}
+                    </td>
                     <td className="px-5 py-4 text-slate-300">{pick(company, ["industry"], "Not added")}</td>
                     <td className="px-5 py-4 text-slate-400">{pick(company, ["location"], "Not added")}</td>
                     <td className="px-5 py-4 text-slate-400">{pick(company, ["companySize"], "Not added")}</td>
